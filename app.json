@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "My Agrimate",
-    "slug": "My Agrimate",
+    "slug": "my-agrimate",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
