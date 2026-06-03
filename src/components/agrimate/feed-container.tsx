@@ -12,13 +12,15 @@ interface FeedContainerProps {
 const CONTAINER_HEIGHT = 160;
 const MARKER_POSITIONS = [100, 75, 50, 25, 0];
 
+const toPercent = (value: number) => `${value}%` as `${number}%`;
+
 export function FeedContainer({ feedLevel }: FeedContainerProps) {
   const pellets = React.useMemo(
     () =>
       [...Array(20)].map((_, i) => ({
         id: i,
-        left: `${Math.random() * 100}%`,
-        top: `${Math.random() * 100}%`,
+        left: toPercent(Math.random() * 100),
+        top: toPercent(Math.random() * 100),
       })),
     [],
   );
@@ -40,7 +42,7 @@ export function FeedContainer({ feedLevel }: FeedContainerProps) {
           style={[
             styles.fill,
             {
-              height: `${feedLevel}%`,
+              height: toPercent(feedLevel),
             },
           ]}
         >

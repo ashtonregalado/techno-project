@@ -30,13 +30,13 @@ export function FeederStatusCard({
           Animated.timing(animationValue, {
             toValue: 1,
             duration: 800,
-            easing: Easing.inOut(Easing.sine),
+            easing: Easing.inOut(Easing.sin),
             useNativeDriver: true,
           }),
           Animated.timing(animationValue, {
             toValue: 0,
             duration: 800,
-            easing: Easing.inOut(Easing.sine),
+            easing: Easing.inOut(Easing.sin),
             useNativeDriver: true,
           }),
         ]),
