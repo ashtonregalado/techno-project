@@ -1,19 +1,19 @@
 import { AgrimateColors, Spacing } from "@/constants/design";
 import { useFeeder } from "@/hooks/use-feeder";
 import { SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
-import { FeedContainer } from "./feed-container";
-import { FeedRateControl } from "./feed-rate-control";
 import { FeederStatusCard } from "./feeder-status-card";
 import { AgrimateHeader } from "./header";
+import { MachineControlCard } from "./machine-contol";
 
 export function AgremateDashboard() {
   const {
     isFeeding,
     feedRate,
-    feedLevel,
-    loading,
+    isMachineRunning,
     handleStartFeed,
     handleStopFeed,
+    handleStartMachine,
+    handleStopMachine,
     handleRateChange,
   } = useFeeder();
 
@@ -34,16 +34,15 @@ export function AgremateDashboard() {
             isFeeding={isFeeding}
             onStart={handleStartFeed}
             onStop={handleStopFeed}
-          />
-
-          {/* Section 2: Feed Rate Control */}
-          <FeedRateControl
             feedRate={feedRate}
             onRateChange={handleRateChange}
           />
 
-          {/* Section 3: Feed Container Visualization */}
-          <FeedContainer feedLevel={feedLevel} />
+          <MachineControlCard
+            isRunning={isMachineRunning}
+            onStart={handleStartMachine}
+            onStop={handleStopMachine}
+          ></MachineControlCard>
         </View>
       </ScrollView>
     </SafeAreaView>

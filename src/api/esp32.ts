@@ -1,11 +1,6 @@
-const rawApiUrl = process.env.API_URL;
+import { CONFIG } from "../constants/config";
 
-if (!rawApiUrl) {
-  throw new Error("Missing API URL. Set API_URL in your .env file.");
-}
-
-// Normalize common formatting issues from .env values (trailing slash/semicolon).
-const API_URL = rawApiUrl.trim().replace(/[;/]+$/, "");
+const API_URL = CONFIG.ESP32_URL;
 
 export async function startFeed() {
   try {
@@ -66,4 +61,29 @@ export async function setSchedule(hour: string) {
   });
 
   return response.json();
+}
+
+export async function startMachine() {
+  try {
+    const response = await fetch(`${API_URL}/machine`, {
+      method: "POST",
+    });
+    console.log("Start machine response:", response);
+    return response.text();
+  } catch (error) {
+    console.error("Error starting machine:", error);
+    throw error;
+  }
+}
+
+export async function stopMachine() {
+  try {
+    const response = await fetch(`${API_URL}/machine`, {
+      method: "DELETE",
+    });
+    return response.text();
+  } catch (error) {
+    console.error("Error stopping machine:", error);
+    throw error;
+  }
 }

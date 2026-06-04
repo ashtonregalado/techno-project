@@ -1,8 +1,15 @@
-import { getStatus, startFeed, stopFeed, updateFeedRate } from "@/api/esp32";
-import { useEffect, useState } from "react";
+import {
+  getStatus,
+  startMachine,
+  stopMachine,
+  updateFeedRate,
+} from "@/api/esp32";
+import { useState } from "react";
 
 export function useFeeder() {
   const [isFeeding, setIsFeeding] = useState(false);
+
+  const [isMachineRunning, setIsMachineRunning] = useState(false);
 
   const [feedRate, setFeedRate] = useState(5);
 
@@ -26,7 +33,7 @@ export function useFeeder() {
     try {
       setLoading(true);
 
-      await startFeed();
+      // await startFeed();
 
       setIsFeeding(true);
     } catch (error) {
@@ -40,7 +47,7 @@ export function useFeeder() {
     try {
       setLoading(true);
 
-      await stopFeed();
+      // await stopFeed();
 
       setIsFeeding(false);
     } catch (error) {
@@ -60,21 +67,48 @@ export function useFeeder() {
     }
   };
 
-  useEffect(() => {
-    refreshStatus();
+  const handleStartMachine = async () => {
+    try {
+      setLoading(true);
+      await startMachine();
+      setIsMachineRunning(true);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const interval = setInterval(refreshStatus, 3000);
+  const handleStopMachine = async () => {
+    try {
+      setLoading(true);
+      await stopMachine();
+      setIsMachineRunning(false);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return () => clearInterval(interval);
-  }, []);
+  // useEffect(() => {
+  //   refreshStatus();
+
+  //   const interval = setInterval(refreshStatus, 3000);
+
+  //   return () => clearInterval(interval);
+  // }, []);
 
   return {
     isFeeding,
     feedRate,
     feedLevel,
     loading,
+    isMachineRunning,
     handleStartFeed,
     handleStopFeed,
     handleRateChange,
+    handleStartMachine,
+    handleStopMachine,
   };
 }

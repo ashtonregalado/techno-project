@@ -5,11 +5,14 @@ import { Animated, Easing, StyleSheet, Text, View } from "react-native";
 import Svg, { Circle, Ellipse, Line, Path, Rect } from "react-native-svg";
 import { Button } from "./button";
 import { Card } from "./card";
+import { FeedRateControl } from "./feed-rate-control";
 
 interface FeederStatusCardProps {
   isFeeding: boolean;
   onStart?: () => void;
   onStop?: () => void;
+  feedRate?: number;
+  onRateChange?: (rate: number) => void;
 }
 
 const FEEDER_HEIGHT = 180;
@@ -18,6 +21,8 @@ export function FeederStatusCard({
   isFeeding,
   onStart,
   onStop,
+  feedRate = 3,
+  onRateChange,
 }: FeederStatusCardProps) {
   const animationValue = React.useRef(new Animated.Value(0)).current;
 
@@ -197,6 +202,11 @@ export function FeederStatusCard({
             variant="outline"
             style={styles.button}
           />
+        </View>
+
+        {/* Feed rate control combined with status */}
+        <View style={{ marginTop: Spacing.md }}>
+          <FeedRateControl feedRate={feedRate} onRateChange={onRateChange} />
         </View>
       </View>
     </Card>
