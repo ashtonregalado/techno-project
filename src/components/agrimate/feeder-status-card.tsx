@@ -1,327 +1,399 @@
-import { AgrimateColors, Spacing, Typography } from "@/constants/design";
+import { AgrimateColors, Spacing } from "@/constants/design";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
-import { Animated, Easing, StyleSheet, Text, View } from "react-native";
-import Svg, { Circle, Ellipse, Line, Path, Rect } from "react-native-svg";
-import { Button } from "./button";
-import { Card } from "./card";
+import { ArrowLeft, ArrowRight, Bird, Power } from "lucide-react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { FeedRateControl } from "./feed-rate-control";
 
-interface FeederStatusCardProps {
-  isFeeding: boolean;
-  onStart?: () => void;
-  onStop?: () => void;
-  feedRate?: number;
-  onRateChange?: (rate: number) => void;
+interface Props {
+  feederActive: boolean;
+  activeFeeder: "left" | "right" | "both" | null;
+  feedRate: number;
+
+  onTogglePower?: () => void;
+  onFeederChange?: (feeder: "left" | "right" | "both" | null) => void;
+  onRateChange?: (value: number) => void;
 }
 
-const FEEDER_HEIGHT = 180;
-
 export function FeederStatusCard({
-  isFeeding,
-  onStart,
-  onStop,
-  feedRate = 3,
+  feederActive,
+  activeFeeder,
+  feedRate,
+  onTogglePower,
+  onFeederChange,
   onRateChange,
-}: FeederStatusCardProps) {
-  const animationValue = React.useRef(new Animated.Value(0)).current;
-
-  React.useEffect(() => {
-    let animation: Animated.CompositeAnimation;
-
-    if (isFeeding) {
-      animation = Animated.loop(
-        Animated.sequence([
-          Animated.timing(animationValue, {
-            toValue: 1,
-            duration: 800,
-            easing: Easing.inOut(Easing.sin),
-            useNativeDriver: true,
-          }),
-          Animated.timing(animationValue, {
-            toValue: 0,
-            duration: 800,
-            easing: Easing.inOut(Easing.sin),
-            useNativeDriver: true,
-          }),
-        ]),
-      );
-
-      animation.start();
-    }
-
-    return () => animation?.stop();
-  }, [isFeeding]);
-
-  const pelletTranslateY = animationValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 20],
-  });
-
+}: Props) {
   return (
-    <Card style={styles.card}>
-      {/* Header */}
+    <View style={styles.card}>
+      {/* HEADER */}
       <LinearGradient
         colors={[AgrimateColors.primary, "#24563f"]}
         start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
+        end={{ x: 1, y: 1 }}
         style={styles.header}
       >
-        <View>
-          <Text style={styles.title}>Smart chicken feeder</Text>
-          <Text style={styles.subtitle}>Real-time monitoring</Text>
-        </View>
+        {/* Decorative circles */}
+        <View style={[styles.decCircle, styles.decCircleTop]} />
+        <View style={[styles.decCircle, styles.decCircleBottom]} />
 
-        <View
-          style={[
-            styles.badge,
-            isFeeding ? styles.feedingBadge : styles.standbyBadge,
-          ]}
-        >
-          <Text style={styles.badgeText}>
-            {isFeeding ? "FEEDING" : "STANDBY"}
-          </Text>
+        <View style={styles.headerRow}>
+          <View style={styles.iconBox}>
+            <Bird size={18} color="#fff" />
+          </View>
+
+          <View style={{ flex: 1 }}>
+            <Text style={styles.title}>Feeder Control</Text>
+
+            {activeFeeder && (
+              <Text style={styles.subtitle}>
+                {activeFeeder === "both"
+                  ? "Both Feeders"
+                  : `${activeFeeder} Feeder`}{" "}
+                - {feedRate}g/s
+              </Text>
+            )}
+          </View>
+
+          <View
+            style={[styles.statusPill, feederActive ? styles.on : styles.off]}
+          >
+            <View
+              style={[styles.dot, feederActive ? styles.dotOn : styles.dotOff]}
+            />
+
+            <Text
+              style={[
+                styles.statusText,
+                !feederActive && {
+                  color: AgrimateColors.primary,
+                },
+              ]}
+            >
+              {feederActive ? "ON" : "OFF"}
+            </Text>
+          </View>
         </View>
       </LinearGradient>
 
-      <View style={styles.content}>
-        {/* Illustration Background */}
-        <LinearGradient
-          colors={["#fef3c7", "#fed7aa"]}
-          style={styles.illustrationContainer}
+      {/* BODY */}
+      <View style={styles.body}>
+        {/* POWER BUTTON */}
+        <Pressable
+          onPress={onTogglePower}
+          style={[
+            styles.powerButton,
+            feederActive ? styles.powerOff : styles.powerOn,
+          ]}
         >
-          <View style={{ height: FEEDER_HEIGHT }}>
-            <Svg width="100%" height={FEEDER_HEIGHT} viewBox="0 0 200 140">
-              {/* Ground */}
-              <Rect
-                x="0"
-                y="115"
-                width="200"
-                height="25"
-                fill="#d97706"
-                opacity="0.3"
-              />
-              <Line
-                x1="0"
-                y1="115"
-                x2="200"
-                y2="115"
-                stroke="#92400e"
-                strokeWidth="2"
-              />
-
-              {/* Hopper */}
-              <Path
-                d="M70 30 L130 30 L120 70 L80 70 Z"
-                fill={AgrimateColors.primary}
-              />
-
-              <Rect x="70" y="25" width="60" height="8" rx="3" fill="#52b788" />
-
-              {/* Feed Window */}
-              <Rect
-                x="85"
-                y="40"
-                width="30"
-                height="25"
-                rx="2"
-                fill="#F59E0B"
-                opacity="0.3"
-              />
-
-              <Rect
-                x="85"
-                y="55"
-                width="30"
-                height="10"
-                rx="1"
-                fill="#F59E0B"
-              />
-
-              {/* Tube */}
-              <Rect
-                x="95"
-                y="70"
-                width="10"
-                height="25"
-                fill={AgrimateColors.primary}
-              />
-
-              {/* Tray */}
-              <Ellipse cx="100" cy="95" rx="35" ry="8" fill="#F59E0B" />
-
-              <Rect x="65" y="95" width="70" height="3" fill="#d97706" />
-
-              {/* Pellets in tray */}
-              {[80, 88, 95, 105, 112, 120].map((x) => (
-                <Circle key={x} cx={x} cy="97" r="2.5" fill="#fbbf24" />
-              ))}
-
-              {/* Chickens */}
-              <Chicken x={50} />
-              <Chicken x={150} flipped />
-            </Svg>
-
-            {/* Animated Pellets */}
-            {isFeeding && (
-              <>
-                {[0, 1, 2].map((i) => (
-                  <Animated.View
-                    key={i}
-                    style={[
-                      styles.pellet,
-                      {
-                        transform: [
-                          {
-                            translateY: pelletTranslateY,
-                          },
-                        ],
-                        left: `50%`,
-                        marginLeft: (i - 1) * 8,
-                      },
-                    ]}
-                  />
-                ))}
-              </>
-            )}
+          <View style={styles.powerIcon}>
+            <Power size={16} color="#fff" />
           </View>
-        </LinearGradient>
 
-        {/* Buttons */}
-        <View style={styles.buttonRow}>
-          <Button
-            label="START"
-            onPress={onStart}
-            variant="primary"
-            style={styles.button}
-          />
+          <Text style={styles.powerText}>
+            {feederActive ? "Power Off" : "Power On"}
+          </Text>
+        </Pressable>
 
-          <Button
-            label="STOP"
-            onPress={onStop}
-            variant="outline"
-            style={styles.button}
-          />
+        {/* FEEDER BUTTONS */}
+        <View style={styles.grid3}>
+          {/* LEFT */}
+          <Pressable
+            onPress={() => onFeederChange?.("left")}
+            disabled={!feederActive}
+            style={[
+              styles.feederBtn,
+              activeFeeder === "left" && styles.activeBtn,
+              !feederActive && styles.disabled,
+            ]}
+          >
+            <View
+              style={[
+                styles.feederIcon,
+                activeFeeder === "left" && styles.activeIcon,
+              ]}
+            >
+              <ArrowLeft
+                size={16}
+                color={
+                  activeFeeder === "left" ? "#fff" : AgrimateColors.primary
+                }
+              />
+            </View>
+
+            <Text
+              style={[
+                styles.feederText,
+                activeFeeder === "left" && styles.activeText,
+              ]}
+            >
+              Left
+            </Text>
+          </Pressable>
+
+          {/* BOTH */}
+          <Pressable
+            onPress={() => onFeederChange?.("both")}
+            disabled={!feederActive}
+            style={[
+              styles.feederBtn,
+              activeFeeder === "both" && styles.activeBtn,
+              !feederActive && styles.disabled,
+            ]}
+          >
+            <View
+              style={[
+                styles.feederIcon,
+                activeFeeder === "both" && styles.activeIcon,
+              ]}
+            >
+              <Bird
+                size={16}
+                color={
+                  activeFeeder === "both" ? "#fff" : AgrimateColors.primary
+                }
+              />
+            </View>
+
+            <Text
+              style={[
+                styles.feederText,
+                activeFeeder === "both" && styles.activeText,
+              ]}
+            >
+              Both
+            </Text>
+          </Pressable>
+
+          {/* RIGHT */}
+          <Pressable
+            onPress={() => onFeederChange?.("right")}
+            disabled={!feederActive}
+            style={[
+              styles.feederBtn,
+              activeFeeder === "right" && styles.activeBtn,
+              !feederActive && styles.disabled,
+            ]}
+          >
+            <View
+              style={[
+                styles.feederIcon,
+                activeFeeder === "right" && styles.activeIcon,
+              ]}
+            >
+              <ArrowRight
+                size={16}
+                color={
+                  activeFeeder === "right" ? "#fff" : AgrimateColors.primary
+                }
+              />
+            </View>
+
+            <Text
+              style={[
+                styles.feederText,
+                activeFeeder === "right" && styles.activeText,
+              ]}
+            >
+              Right
+            </Text>
+          </Pressable>
         </View>
 
-        {/* Feed rate control combined with status */}
-        <View style={{ marginTop: Spacing.md }}>
+        {/* FEED RATE */}
+        <View style={[styles.rateWrapper, !feederActive && styles.disabled]}>
           <FeedRateControl feedRate={feedRate} onRateChange={onRateChange} />
         </View>
       </View>
-    </Card>
-  );
-}
-
-function Chicken({ x, flipped = false }: { x: number; flipped?: boolean }) {
-  return (
-    <>
-      <Ellipse
-        cx={x}
-        cy="110"
-        rx="12"
-        ry="10"
-        fill="white"
-        stroke="#F59E0B"
-        strokeWidth="1.5"
-      />
-
-      <Circle
-        cx={x}
-        cy="100"
-        r="8"
-        fill="white"
-        stroke="#F59E0B"
-        strokeWidth="1.5"
-      />
-
-      <Circle cx={flipped ? x - 3 : x + 3} cy="98" r="1.5" fill="#1B4332" />
-
-      <Path
-        d={
-          flipped
-            ? `M${x - 10} 102 L${x - 5} 102 L${x - 7.5} 104 Z`
-            : `M${x + 5} 102 L${x + 10} 102 L${x + 7.5} 104 Z`
-        }
-        fill="#F59E0B"
-      />
-    </>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
+    backgroundColor: "#fff",
+    borderRadius: 18,
     overflow: "hidden",
-    padding: 0,
-    marginBottom: Spacing.lg,
+    borderWidth: 2,
+    borderColor: "#E5E7EB",
+    marginBottom: Spacing.sm,
   },
 
   header: {
-    paddingHorizontal: Spacing.lg,
-    paddingVertical: Spacing.md,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    position: "relative",
+    overflow: "hidden",
+  },
+
+  decCircle: {
+    position: "absolute",
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderRadius: 999,
+  },
+
+  decCircleTop: {
+    width: 90,
+    height: 90,
+    top: -45,
+    right: -20,
+  },
+
+  decCircleBottom: {
+    width: 70,
+    height: 70,
+    bottom: -35,
+    left: -20,
+  },
+
+  headerRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    gap: 8,
+  },
+
+  iconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   title: {
-    fontSize: Typography.fontSize.lg,
+    fontSize: 14,
     fontWeight: "700",
     color: "#fff",
   },
 
   subtitle: {
-    fontSize: Typography.fontSize.sm,
+    fontSize: 10,
     color: "rgba(255,255,255,0.8)",
-    marginTop: 2,
+    textTransform: "capitalize",
   },
 
-  badge: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 10,
-  },
-
-  feedingBadge: {
-    backgroundColor: "#22c55e",
-  },
-
-  standbyBadge: {
-    backgroundColor: "rgba(255,255,255,0.2)",
-  },
-
-  badgeText: {
-    color: "#fff",
-    fontWeight: "700",
-    fontSize: 12,
-  },
-
-  content: {
-    padding: Spacing.md,
-  },
-
-  illustrationContainer: {
-    borderRadius: 16,
-    overflow: "hidden",
-    padding: Spacing.md,
-    marginBottom: Spacing.lg,
-  },
-
-  buttonRow: {
+  statusPill: {
     flexDirection: "row",
-    gap: Spacing.md,
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
   },
 
-  button: {
-    flex: 1,
+  on: {
+    backgroundColor: "#22C55E",
   },
 
-  pellet: {
-    position: "absolute",
-    top: 75,
+  off: {
+    backgroundColor: "rgba(255,255,255,0.9)",
+  },
+
+  dot: {
     width: 6,
     height: 6,
     borderRadius: 999,
-    backgroundColor: "#fbbf24",
+  },
+
+  dotOn: {
+    backgroundColor: "#fff",
+  },
+
+  dotOff: {
+    backgroundColor: AgrimateColors.primary,
+  },
+
+  statusText: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: "#fff",
+  },
+
+  body: {
+    padding: 10,
+    gap: 8,
+  },
+
+  powerButton: {
+    borderRadius: 12,
+    paddingVertical: 10,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+  },
+
+  powerOn: {
+    backgroundColor: AgrimateColors.accent,
+  },
+
+  powerOff: {
+    backgroundColor: "#DC2626",
+  },
+
+  powerIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  powerText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 14,
+  },
+
+  grid3: {
+    flexDirection: "row",
+    gap: 8,
+  },
+
+  feederBtn: {
+    flex: 1,
+    backgroundColor: "#fff",
+    borderWidth: 2,
+    borderColor: "#E5E7EB",
+    borderRadius: 12,
+    paddingVertical: 10,
+    alignItems: "center",
+    gap: 4,
+  },
+
+  activeBtn: {
+    backgroundColor: AgrimateColors.accent,
+    borderColor: AgrimateColors.accent,
+  },
+
+  feederIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 999,
+    backgroundColor: "rgba(34,84,63,0.08)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  activeIcon: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+  },
+
+  feederText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#111827",
+  },
+
+  activeText: {
+    color: "#fff",
+  },
+
+  rateWrapper: {
+    marginTop: 4,
+  },
+
+  disabled: {
+    opacity: 0.4,
   },
 });

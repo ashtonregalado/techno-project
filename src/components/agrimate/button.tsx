@@ -5,7 +5,13 @@ import {
   Typography,
 } from "@/constants/design";
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, ViewStyle } from "react-native";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  ViewStyle,
+} from "react-native";
 
 interface ButtonProps {
   label: string;
@@ -14,6 +20,9 @@ interface ButtonProps {
   size?: "sm" | "md" | "lg";
   style?: ViewStyle;
   icon?: React.ReactNode;
+  disabled?: boolean;
+  loading?: boolean;
+  fullWidth?: boolean;
 }
 
 export function Button({
@@ -23,11 +32,18 @@ export function Button({
   size = "md",
   style,
   icon,
+  disabled = false,
+  loading = false,
+  fullWidth = false,
 }: ButtonProps) {
+  const isDisabled = disabled || loading;
+
   const buttonStyle = [
     styles.button,
     styles[variant],
     styles[`size_${size}`],
+    fullWidth && styles.fullWidth,
+    isDisabled && styles.disabled,
     style,
   ];
 
@@ -35,12 +51,24 @@ export function Button({
     styles.text,
     styles[`text_${variant}`],
     styles[`textSize_${size}`],
+    isDisabled && styles.textDisabled,
   ];
 
   return (
-    <TouchableOpacity style={buttonStyle} onPress={onPress} activeOpacity={0.7}>
-      {icon && icon}
-      <Text style={textStyle}>{label}</Text>
+    <TouchableOpacity
+      style={buttonStyle}
+      onPress={onPress}
+      activeOpacity={0.7}
+      disabled={isDisabled}
+    >
+      {loading ? (
+        <ActivityIndicator size="small" color="#fff" />
+      ) : (
+        <>
+          {icon}
+          <Text style={textStyle}>{label}</Text>
+        </>
+      )}
     </TouchableOpacity>
   );
 }
@@ -53,6 +81,15 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.md,
     gap: Spacing.sm,
   },
+
+  fullWidth: {
+    width: "100%",
+  },
+
+  disabled: {
+    opacity: 0.5,
+  },
+
   primary: {
     backgroundColor: AgrimateColors.accent,
   },
@@ -64,6 +101,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: AgrimateColors.border,
   },
+
   size_sm: {
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.md,
@@ -76,9 +114,11 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.lg,
     paddingHorizontal: Spacing.xl,
   },
+
   text: {
     fontWeight: Typography.fontWeight.bold,
   },
+
   text_primary: {
     color: AgrimateColors.background,
   },
@@ -88,6 +128,11 @@ const styles = StyleSheet.create({
   text_outline: {
     color: AgrimateColors.text,
   },
+
+  textDisabled: {
+    opacity: 0.7,
+  },
+
   textSize_sm: {
     fontSize: Typography.fontSize.sm,
   },

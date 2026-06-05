@@ -1,5 +1,5 @@
-import { AgremateDashboard } from "@/components/agrimate/dashboard";
+import { AgrimateDashboard } from "@/components/agrimate/dashboard";
 
 export default function HomeScreen() {
-  return <AgremateDashboard />;
+  return <AgrimateDashboard />;
 }

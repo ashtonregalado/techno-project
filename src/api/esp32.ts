@@ -43,12 +43,6 @@ export async function updateFeedRate(amount: number) {
   }
 }
 
-export async function getStatus() {
-  const response = await fetch(`${API_URL}/status`);
-
-  return response.json();
-}
-
 export async function setSchedule(hour: string) {
   const response = await fetch(`${API_URL}/schedule`, {
     method: "POST",

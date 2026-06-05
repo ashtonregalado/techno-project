@@ -1,21 +1,35 @@
 import { AgrimateColors, Spacing } from "@/constants/design";
 import { useFeeder } from "@/hooks/use-feeder";
+import { useState } from "react";
 import { SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
 import { FeederStatusCard } from "./feeder-status-card";
 import { AgrimateHeader } from "./header";
+import { LayerSelector } from "./layer";
 import { MachineControlCard } from "./machine-contol";
 
-export function AgremateDashboard() {
+export function AgrimateDashboard() {
   const {
     isFeeding,
     feedRate,
     isMachineRunning,
+    machineDirection,
+    machineSpeed,
+    activeFeeder,
+
+    handleFeederChange,
     handleStartFeed,
     handleStopFeed,
+    handleRateChange,
+
     handleStartMachine,
     handleStopMachine,
-    handleRateChange,
+    handleDirectionChange,
+    handleSpeedChange,
   } = useFeeder();
+
+  const [selectedLayer, setSelectedLayer] = useState<"first" | "second">(
+    "first",
+  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -27,22 +41,34 @@ export function AgremateDashboard() {
         {/* Header */}
         <AgrimateHeader />
 
-        {/* Main Content */}
         <View style={styles.content}>
-          {/* Section 1: Smart Chicken Feeder */}
+          <LayerSelector
+            selectedLayer={selectedLayer}
+            onLayerChange={setSelectedLayer}
+          />
+          {/* FEEDER */}
           <FeederStatusCard
-            isFeeding={isFeeding}
-            onStart={handleStartFeed}
-            onStop={handleStopFeed}
+            feederActive={isFeeding}
+            activeFeeder={activeFeeder}
             feedRate={feedRate}
+            onTogglePower={() =>
+              isFeeding ? handleStopFeed() : handleStartFeed()
+            }
+            onFeederChange={handleFeederChange}
             onRateChange={handleRateChange}
           />
 
+          {/* MACHINE */}
           <MachineControlCard
-            isRunning={isMachineRunning}
-            onStart={handleStartMachine}
-            onStop={handleStopMachine}
-          ></MachineControlCard>
+            isActive={isMachineRunning}
+            direction={machineDirection}
+            speed={machineSpeed}
+            onTogglePower={() =>
+              isMachineRunning ? handleStopMachine() : handleStartMachine()
+            }
+            onDirectionChange={handleDirectionChange}
+            onSpeedChange={handleSpeedChange}
+          />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -64,5 +90,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.lg,
     paddingBottom: Spacing.xl,
+    gap: Spacing.xs,
   },
 });

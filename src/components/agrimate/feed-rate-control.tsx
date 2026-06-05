@@ -60,15 +60,15 @@ export function FeedRateControl({
 
 const styles = StyleSheet.create({
   card: {
-    marginBottom: Spacing.lg,
-    padding: Spacing.md,
+    marginBottom: Spacing.xs,
+    padding: Spacing.xxs,
   },
 
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.xs,
   },
 
   headerLeft: {
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
   },
 
   feedRateText: {
-    fontSize: Typography.fontSize.xl,
+    fontSize: Typography.fontSize.sm,
     fontWeight: "700",
     color: AgrimateColors.accent,
   },
@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
   slider: {
     width: "100%",
     height: 40,
-    marginBottom: 4,
+    marginBottom: 2,
   },
 
   labels: {

@@ -1,10 +1,15 @@
-import React from 'react';
-import { StyleSheet, View, ViewStyle } from 'react-native';
-import { AgrimateColors, BorderRadius, Shadows, Spacing } from '@/constants/design';
+import {
+  AgrimateColors,
+  BorderRadius,
+  Shadows,
+  Spacing,
+} from "@/constants/design";
+import React from "react";
+import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 
 interface CardProps {
   children: React.ReactNode;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   noPadding?: boolean;
 }
 
