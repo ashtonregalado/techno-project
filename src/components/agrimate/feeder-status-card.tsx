@@ -4,16 +4,16 @@ import { ArrowLeft, ArrowRight, Bird, Power } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { FeedRateControl } from "./feed-rate-control";
 
+type FeederSide = "left" | "right" | "both" | null;
 interface Props {
   feederActive: boolean;
-  activeFeeder: "left" | "right" | "both" | null;
+  activeFeeder: FeederSide;
   feedRate: number;
 
   onTogglePower?: () => void;
-  onFeederChange?: (feeder: "left" | "right" | "both" | null) => void;
+  onFeederChange?: (feeder: FeederSide) => void;
   onRateChange?: (value: number) => void;
 }
-
 export function FeederStatusCard({
   feederActive,
   activeFeeder,
@@ -43,14 +43,12 @@ export function FeederStatusCard({
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>Feeder Control</Text>
 
-            {activeFeeder && (
-              <Text style={styles.subtitle}>
-                {activeFeeder === "both"
-                  ? "Both Feeders"
-                  : `${activeFeeder} Feeder`}{" "}
-                - {feedRate}g/s
-              </Text>
-            )}
+            <Text style={styles.subtitle}>
+              {activeFeeder === "both"
+                ? "Both Feeders"
+                : `${activeFeeder} Feeder`}{" "}
+              - {feedRate}g/s
+            </Text>
           </View>
 
           <View
@@ -81,7 +79,7 @@ export function FeederStatusCard({
           onPress={onTogglePower}
           style={[
             styles.powerButton,
-            feederActive ? styles.powerOff : styles.powerOn,
+            feederActive ? styles.powerOn : styles.powerOff,
           ]}
         >
           <View style={styles.powerIcon}>
@@ -89,7 +87,7 @@ export function FeederStatusCard({
           </View>
 
           <Text style={styles.powerText}>
-            {feederActive ? "Power Off" : "Power On"}
+            {feederActive ? "Power On" : "Power Off"}
           </Text>
         </Pressable>
 
@@ -200,7 +198,11 @@ export function FeederStatusCard({
 
         {/* FEED RATE */}
         <View style={[styles.rateWrapper, !feederActive && styles.disabled]}>
-          <FeedRateControl feedRate={feedRate} onRateChange={onRateChange} />
+          <FeedRateControl
+            feedRate={feedRate}
+            onRateChange={onRateChange}
+            disabled={!feederActive}
+          />
         </View>
       </View>
     </View>

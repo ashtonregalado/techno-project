@@ -16,16 +16,20 @@ import {
 import { Card } from "./card";
 
 import { Pressable, StyleSheet, Text, View } from "react-native";
+
 interface Props {
   isActive: boolean;
-  direction: "forward" | "reverse" | null;
+
+  direction: "forward" | "reverse" | "stop";
+
   speed: number;
 
   onTogglePower?: () => void;
-  onDirectionChange?: (dir: "forward" | "reverse" | null) => void;
+
+  onDirectionChange?: (dir: "forward" | "reverse") => void;
+
   onSpeedChange?: (value: number) => void;
 }
-
 export function MachineControlCard({
   isActive,
   direction,
@@ -96,7 +100,7 @@ export function MachineControlCard({
           onPress={onTogglePower}
           style={[
             styles.powerButton,
-            isActive ? styles.powerButtonOff : styles.powerButtonOn,
+            isActive ? styles.powerButtonOn : styles.powerButtonOff,
           ]}
         >
           <View style={styles.powerIconCircle}>
@@ -104,18 +108,15 @@ export function MachineControlCard({
           </View>
 
           <Text style={styles.powerText}>
-            {isActive ? "Power Off" : "Power On"}
+            {isActive ? "Power ON" : "Power OFF"}
           </Text>
         </Pressable>
-
         {/* DIRECTION BUTTONS */}
         <View style={styles.directionRow}>
           {/* Reverse */}
           <Pressable
             disabled={!isActive}
-            onPress={() =>
-              onDirectionChange?.(direction === "reverse" ? null : "reverse")
-            }
+            onPress={() => onDirectionChange?.("reverse")}
             style={[
               styles.directionButton,
               direction === "reverse" && styles.directionButtonActive,
@@ -149,9 +150,7 @@ export function MachineControlCard({
           {/* Forward */}
           <Pressable
             disabled={!isActive}
-            onPress={() =>
-              onDirectionChange?.(direction === "forward" ? null : "forward")
-            }
+            onPress={() => onDirectionChange?.("forward")}
             style={[
               styles.directionButton,
               direction === "forward" && styles.directionButtonActive,

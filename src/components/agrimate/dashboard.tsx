@@ -31,6 +31,14 @@ export function AgrimateDashboard() {
     "first",
   );
 
+  /*
+  =========================================
+  NORMALIZE DIRECTION (IMPORTANT FIX)
+  =========================================
+  */
+  const normalizedDirection: "forward" | "reverse" | "stop" =
+    machineDirection ?? "stop";
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView
@@ -38,15 +46,19 @@ export function AgrimateDashboard() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Header */}
+        {/* HEADER */}
         <AgrimateHeader />
 
         <View style={styles.content}>
+          {/* LAYER SELECTOR */}
           <LayerSelector
             selectedLayer={selectedLayer}
             onLayerChange={setSelectedLayer}
           />
+
+          {/* ========================= */}
           {/* FEEDER */}
+          {/* ========================= */}
           <FeederStatusCard
             feederActive={isFeeding}
             activeFeeder={activeFeeder}
@@ -58,10 +70,12 @@ export function AgrimateDashboard() {
             onRateChange={handleRateChange}
           />
 
+          {/* ========================= */}
           {/* MACHINE */}
+          {/* ========================= */}
           <MachineControlCard
             isActive={isMachineRunning}
-            direction={machineDirection}
+            direction={normalizedDirection}
             speed={machineSpeed}
             onTogglePower={() =>
               isMachineRunning ? handleStopMachine() : handleStartMachine()

@@ -1,44 +1,68 @@
-import { updateFeedRate } from "@/api/esp32";
+import {
+  setFeedRate,
+  setFeederPower,
+  setLayerState,
+  setMachineDirection,
+  setMachinePower,
+  setMachineSpeed,
+} from "@/api/esp32";
 import { useState } from "react";
 
-type Direction = "forward" | "reverse" | null;
+/*
+=========================================
+TYPES
+=========================================
+*/
+type MachineDirection = "forward" | "reverse" | "stop";
 
+type FeederSide = "left" | "right" | "both" | null;
+
+/*
+=========================================
+HOOK
+=========================================
+*/
 export function useFeeder() {
-  // FEEDER
+  /*
+  =========================================
+  FEEDER STATE
+  =========================================
+  */
   const [isFeeding, setIsFeeding] = useState(false);
-  const [feedRate, setFeedRate] = useState(5);
-  const [feedLevel, setFeedLevel] = useState(80);
+
+  const [feedRate, setFeedRateState] = useState(5);
+
+  const [feedLevel] = useState(80);
+
   const [feederLoading, setFeederLoading] = useState(false);
 
-  // MACHINE
+  const [feederActive, setFeederActive] = useState(false);
+
+  const [activeFeeder, setActiveFeeder] = useState<FeederSide>(null);
+
+  const [firstLayer, setFirstLayer] = useState(false);
+
+  const [secondLayer, setSecondLayer] = useState(false);
+
+  /*
+  =========================================
+  MACHINE STATE
+  =========================================
+  */
   const [isMachineRunning, setIsMachineRunning] = useState(false);
-  const [machineDirection, setMachineDirection] = useState<Direction>(null);
-  const [machineSpeed, setMachineSpeed] = useState(50);
+
+  const [machineDirection, setMachineDirectionState] =
+    useState<MachineDirection>("stop");
+
+  const [machineSpeed, setMachineSpeedState] = useState(50);
+
   const [machineLoading, setMachineLoading] = useState(false);
-  const [activeFeeder, setActiveFeeder] = useState<
-    "left" | "right" | "both" | null
-  >(null);
 
-  // // GLOBAL STATUS SYNC
-  // const refreshStatus = async () => {
-  //   try {
-  //     const data = await getStatus();
-
-  //     setIsFeeding(data.feeding);
-  //     setFeedRate(data.feedRate);
-  //     setFeedLevel(data.feedLevel);
-
-  //     setIsMachineRunning(data.machineRunning);
-  //     setMachineDirection(data.direction ?? null);
-  //     setMachineSpeed(data.speed ?? 50);
-  //   } catch (error) {
-  //     console.error("Status sync error:", error);
-  //   }
-  // };
-
-  // =========================
-  // FEEDER CONTROLS
-  // =========================
+  /*
+  =========================================
+  FEEDER CONTROLS
+  =========================================
+  */
 
   const handleStartFeed = async () => {
     if (feederLoading) return;
@@ -46,7 +70,9 @@ export function useFeeder() {
     try {
       setFeederLoading(true);
 
-      // await startFeed();
+      await setFeederPower(true);
+
+      setFeederActive(true);
       setIsFeeding(true);
     } catch (error) {
       console.error(error);
@@ -61,7 +87,9 @@ export function useFeeder() {
     try {
       setFeederLoading(true);
 
-      // await stopFeed();
+      await setFeederPower(false);
+
+      setFeederActive(false);
       setIsFeeding(false);
       setActiveFeeder(null);
     } catch (error) {
@@ -72,22 +100,48 @@ export function useFeeder() {
   };
 
   const handleRateChange = async (rate: number) => {
-    setFeedRate(rate); // optimistic
+    setFeedRateState(rate);
 
     try {
-      await updateFeedRate(rate);
+      await setFeedRate(rate);
     } catch (error) {
       console.error("Feed rate update failed:", error);
     }
   };
 
-  const handleFeederChange = (feeder: "left" | "right" | "both" | null) => {
-    setActiveFeeder((prev) => (prev === feeder ? null : feeder));
+  const handleFeederChange = async (feeder: FeederSide) => {
+    const newValue = activeFeeder === feeder ? null : feeder;
+
+    setActiveFeeder(newValue);
+
+    try {
+      const isActive = newValue !== null;
+
+      await setFeederPower(isActive);
+    } catch (error) {
+      console.error("Feeder change failed:", error);
+    }
   };
 
-  // =========================
-  // MACHINE CONTROLS
-  // =========================
+  const handleLayerToggle = async (layer: "first" | "second") => {
+    if (layer === "first") {
+      const next = !firstLayer;
+      setFirstLayer(next);
+
+      await setLayerState(next, secondLayer);
+    } else {
+      const next = !secondLayer;
+      setSecondLayer(next);
+
+      await setLayerState(firstLayer, next);
+    }
+  };
+
+  /*
+  =========================================
+  MACHINE CONTROLS
+  =========================================
+  */
 
   const handleStartMachine = async () => {
     if (machineLoading || isMachineRunning) return;
@@ -95,10 +149,11 @@ export function useFeeder() {
     try {
       setMachineLoading(true);
 
-      // await startMachine();
+      await setMachinePower(true);
+
       setIsMachineRunning(true);
     } catch (error) {
-      console.error("Start machine error:", error);
+      console.error(error);
     } finally {
       setMachineLoading(false);
     }
@@ -110,51 +165,46 @@ export function useFeeder() {
     try {
       setMachineLoading(true);
 
-      // await stopMachine();
+      await setMachinePower(false);
+
       setIsMachineRunning(false);
-      setMachineDirection(null);
+      setMachineDirectionState("stop");
     } catch (error) {
-      console.error("Stop machine error:", error);
+      console.error(error);
     } finally {
       setMachineLoading(false);
     }
   };
 
-  const handleDirectionChange = async (dir: Direction) => {
+  const handleDirectionChange = async (dir: MachineDirection) => {
     if (!isMachineRunning) return;
 
     try {
-      setMachineDirection(dir);
+      const newDir = machineDirection === dir ? "stop" : dir;
 
-      // OPTIONAL: ESP32 endpoint (recommended)
-      // await updateDirection(dir);
+      setMachineDirectionState(newDir);
+
+      await setMachineDirection(newDir);
     } catch (error) {
       console.error("Direction change failed:", error);
     }
   };
 
   const handleSpeedChange = async (speed: number) => {
-    setMachineSpeed(speed);
+    setMachineSpeedState(speed);
 
     try {
-      // OPTIONAL ESP32 call
-      // await updateSpeed(speed);
+      await setMachineSpeed(speed);
     } catch (error) {
       console.error("Speed update failed:", error);
     }
   };
 
-  // =========================
-  // AUTO SYNC (REAL DEVICE)
-  // =========================
-
-  // useEffect(() => {
-  //   refreshStatus();
-
-  //   const interval = setInterval(refreshStatus, 3000);
-
-  //   return () => clearInterval(interval);
-  // }, []);
+  /*
+  =========================================
+  RETURN
+  =========================================
+  */
 
   return {
     // FEEDER
@@ -162,17 +212,21 @@ export function useFeeder() {
     feedRate,
     feedLevel,
     feederLoading,
+    feederActive,
+    activeFeeder,
+    firstLayer,
+    secondLayer,
     handleStartFeed,
     handleStopFeed,
     handleRateChange,
+    handleFeederChange,
+    handleLayerToggle,
 
     // MACHINE
     isMachineRunning,
     machineDirection,
     machineSpeed,
     machineLoading,
-    activeFeeder,
-    handleFeederChange,
     handleStartMachine,
     handleStopMachine,
     handleDirectionChange,

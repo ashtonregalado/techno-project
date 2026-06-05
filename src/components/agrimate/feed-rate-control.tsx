@@ -11,15 +11,17 @@ import { Card } from "./card";
 
 interface FeedRateControlProps {
   feedRate: number;
+  disabled?: boolean;
   onRateChange?: (rate: number) => void;
 }
 
 export function FeedRateControl({
   feedRate,
+  disabled = false,
   onRateChange,
 }: FeedRateControlProps) {
   return (
-    <Card style={styles.card}>
+    <Card style={[styles.card, disabled && styles.disabledCard]}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
@@ -41,6 +43,7 @@ export function FeedRateControl({
         step={0.5}
         value={feedRate}
         onValueChange={onRateChange}
+        disabled={disabled}
         minimumTrackTintColor={AgrimateColors.accent}
         maximumTrackTintColor={AgrimateColors.mutedBackground}
         thumbTintColor={AgrimateColors.accent}
@@ -49,9 +52,7 @@ export function FeedRateControl({
       {/* Labels */}
       <View style={styles.labels}>
         <Text style={styles.labelText}>1g/s</Text>
-
         <Text style={styles.labelText}>Medium</Text>
-
         <Text style={styles.labelText}>10g/s</Text>
       </View>
     </Card>
@@ -62,6 +63,10 @@ const styles = StyleSheet.create({
   card: {
     marginBottom: Spacing.xs,
     padding: Spacing.xxs,
+  },
+
+  disabledCard: {
+    opacity: 0.45,
   },
 
   header: {
