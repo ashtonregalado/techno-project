@@ -21,7 +21,7 @@ export function FeedRateControl({
   onRateChange,
 }: FeedRateControlProps) {
   return (
-    <Card style={[styles.card, disabled && styles.disabledCard]}>
+    <Card style={[styles.card]}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
@@ -32,7 +32,7 @@ export function FeedRateControl({
           <Text style={styles.title}>Feed Rate</Text>
         </View>
 
-        <Text style={styles.feedRateText}>{feedRate.toFixed(1)}g/s</Text>
+        <Text style={styles.feedRateText}>{feedRate.toFixed(1)} g/s</Text>
       </View>
 
       {/* Slider */}
@@ -51,9 +51,9 @@ export function FeedRateControl({
 
       {/* Labels */}
       <View style={styles.labels}>
-        <Text style={styles.labelText}>1g/s</Text>
-        <Text style={styles.labelText}>Medium</Text>
-        <Text style={styles.labelText}>10g/s</Text>
+        <Text style={styles.labelText}>1 g/s</Text>
+        <Text style={styles.labelText}>5 g/s</Text>
+        <Text style={styles.labelText}>10 g/s</Text>
       </View>
     </Card>
   );
@@ -63,10 +63,6 @@ const styles = StyleSheet.create({
   card: {
     marginBottom: Spacing.xs,
     padding: Spacing.xxs,
-  },
-
-  disabledCard: {
-    opacity: 0.45,
   },
 
   header: {

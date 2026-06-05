@@ -54,7 +54,7 @@ export function useFeeder() {
   const [machineDirection, setMachineDirectionState] =
     useState<MachineDirection>("stop");
 
-  const [machineSpeed, setMachineSpeedState] = useState(50);
+  const [machineSpeed, setMachineSpeedState] = useState(0.3);
 
   const [machineLoading, setMachineLoading] = useState(false);
 
