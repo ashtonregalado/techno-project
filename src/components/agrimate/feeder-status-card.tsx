@@ -1,26 +1,30 @@
 import { AgrimateColors, Spacing } from "@/constants/design";
 import { LinearGradient } from "expo-linear-gradient";
-import { ArrowLeft, ArrowRight, Bird, Power } from "lucide-react-native";
+import { ArrowLeft, ArrowRight, Bird } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { FeedRateControl } from "./feed-rate-control";
 
 type FeederSide = "left" | "right" | "both" | null;
+
 interface Props {
   feederActive: boolean;
   activeFeeder: FeederSide;
   feedRate: number;
+  isFeeding?: boolean;
 
-  onTogglePower?: () => void;
   onFeederChange?: (feeder: FeederSide) => void;
   onRateChange?: (value: number) => void;
+  onStopFeed?: () => void;
 }
+
 export function FeederStatusCard({
   feederActive,
   activeFeeder,
   feedRate,
-  onTogglePower,
+  isFeeding,
   onFeederChange,
   onRateChange,
+  onStopFeed,
 }: Props) {
   return (
     <View style={styles.card}>
@@ -42,31 +46,44 @@ export function FeederStatusCard({
 
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>Feeder Control</Text>
-
             <Text style={styles.subtitle}>
-              {activeFeeder === "both"
-                ? "Both Feeders"
-                : `${activeFeeder} Feeder`}{" "}
-              - {feedRate} g/s
+              {activeFeeder
+                ? activeFeeder === "both"
+                  ? "Both Feeders"
+                  : `${activeFeeder} Feeder`
+                : "No side selected"}{" "}
+              {activeFeeder ? `— ${feedRate} g/s` : ""}
             </Text>
           </View>
 
           <View
-            style={[styles.statusPill, feederActive ? styles.on : styles.off]}
+            style={[
+              styles.statusPill,
+              isFeeding
+                ? styles.feeding
+                : feederActive
+                  ? styles.on
+                  : styles.off,
+            ]}
           >
             <View
-              style={[styles.dot, feederActive ? styles.dotOn : styles.dotOff]}
+              style={[
+                styles.dot,
+                isFeeding
+                  ? styles.dotFeeding
+                  : feederActive
+                    ? styles.dotOn
+                    : styles.dotOff,
+              ]}
             />
-
             <Text
               style={[
                 styles.statusText,
-                !feederActive && {
-                  color: AgrimateColors.primary,
-                },
+                !feederActive &&
+                  !isFeeding && { color: AgrimateColors.primary },
               ]}
             >
-              {feederActive ? "ON" : "OFF"}
+              {isFeeding ? "FEEDING" : feederActive ? "ON" : "OFF"}
             </Text>
           </View>
         </View>
@@ -74,33 +91,25 @@ export function FeederStatusCard({
 
       {/* BODY */}
       <View style={styles.body}>
-        {/* POWER BUTTON */}
-        <Pressable
-          onPress={onTogglePower}
-          style={[
-            styles.powerButton,
-            feederActive ? styles.powerOn : styles.powerOff,
-          ]}
-        >
-          <View style={styles.powerIcon}>
-            <Power size={16} color="#fff" />
-          </View>
+        {/* HINT */}
+        <Text style={styles.hint}>
+          {!activeFeeder
+            ? "Select a side to power on the feeder"
+            : !isFeeding
+              ? "Feeder is on — adjust rate to start feeding"
+              : "Feeding in progress — adjust rate or stop below"}
+        </Text>
 
-          <Text style={styles.powerText}>
-            {feederActive ? "Power On" : "Power Off"}
-          </Text>
-        </Pressable>
-
-        {/* FEEDER BUTTONS */}
+        {/* FEEDER SIDE BUTTONS */}
         <View style={styles.grid3}>
           {/* LEFT */}
           <Pressable
-            onPress={() => onFeederChange?.("left")}
-            disabled={!feederActive}
+            onPress={() =>
+              onFeederChange?.(activeFeeder === "left" ? null : "left")
+            }
             style={[
               styles.feederBtn,
               activeFeeder === "left" && styles.activeBtn,
-              !feederActive && styles.disabled,
             ]}
           >
             <View
@@ -116,7 +125,6 @@ export function FeederStatusCard({
                 }
               />
             </View>
-
             <Text
               style={[
                 styles.feederText,
@@ -129,12 +137,12 @@ export function FeederStatusCard({
 
           {/* BOTH */}
           <Pressable
-            onPress={() => onFeederChange?.("both")}
-            disabled={!feederActive}
+            onPress={() =>
+              onFeederChange?.(activeFeeder === "both" ? null : "both")
+            }
             style={[
               styles.feederBtn,
               activeFeeder === "both" && styles.activeBtn,
-              !feederActive && styles.disabled,
             ]}
           >
             <View
@@ -150,7 +158,6 @@ export function FeederStatusCard({
                 }
               />
             </View>
-
             <Text
               style={[
                 styles.feederText,
@@ -163,12 +170,12 @@ export function FeederStatusCard({
 
           {/* RIGHT */}
           <Pressable
-            onPress={() => onFeederChange?.("right")}
-            disabled={!feederActive}
+            onPress={() =>
+              onFeederChange?.(activeFeeder === "right" ? null : "right")
+            }
             style={[
               styles.feederBtn,
               activeFeeder === "right" && styles.activeBtn,
-              !feederActive && styles.disabled,
             ]}
           >
             <View
@@ -184,7 +191,6 @@ export function FeederStatusCard({
                 }
               />
             </View>
-
             <Text
               style={[
                 styles.feederText,
@@ -196,13 +202,12 @@ export function FeederStatusCard({
           </Pressable>
         </View>
 
-        {/* FEED RATE */}
-        <View style={[styles.rateWrapper]}>
-          <FeedRateControl
-            feedRate={feedRate}
-            onRateChange={onRateChange}
-            disabled={!feederActive}
-          />
+        {/* FEED RATE — disabled until a side is selected */}
+        <View
+          style={[styles.rateWrapper, !activeFeeder && styles.disabled]}
+          pointerEvents={!activeFeeder ? "none" : "auto"}
+        >
+          <FeedRateControl feedRate={feedRate} onRateChange={onRateChange} />
         </View>
       </View>
     </View>
@@ -283,6 +288,10 @@ const styles = StyleSheet.create({
   },
 
   on: {
+    backgroundColor: "#3B82F6",
+  },
+
+  feeding: {
     backgroundColor: "#22C55E",
   },
 
@@ -297,6 +306,10 @@ const styles = StyleSheet.create({
   },
 
   dotOn: {
+    backgroundColor: "#fff",
+  },
+
+  dotFeeding: {
     backgroundColor: "#fff",
   },
 
@@ -315,36 +328,11 @@ const styles = StyleSheet.create({
     gap: 8,
   },
 
-  powerButton: {
-    borderRadius: 12,
-    paddingVertical: 10,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 8,
-  },
-
-  powerOn: {
-    backgroundColor: AgrimateColors.accent,
-  },
-
-  powerOff: {
-    backgroundColor: "#DC2626",
-  },
-
-  powerIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  powerText: {
-    color: "#fff",
-    fontWeight: "700",
-    fontSize: 14,
+  hint: {
+    fontSize: 11,
+    color: "#6B7280",
+    textAlign: "center",
+    paddingVertical: 2,
   },
 
   grid3: {
@@ -393,6 +381,21 @@ const styles = StyleSheet.create({
 
   rateWrapper: {
     marginTop: 4,
+  },
+
+  stopButton: {
+    backgroundColor: "#DC2626",
+    borderRadius: 12,
+    paddingVertical: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 4,
+  },
+
+  stopText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 14,
   },
 
   disabled: {

@@ -18,8 +18,6 @@ export function AgrimateDashboard() {
     activeFeeder,
 
     handleFeederChange,
-    handleStartFeed,
-    handleStopFeed,
     handleRateChange,
 
     // MACHINE
@@ -65,12 +63,10 @@ export function AgrimateDashboard() {
           {/* FEEDER */}
           {/* ========================= */}
           <FeederStatusCard
-            feederActive={isFeeding}
+            feederActive={!!activeFeeder}
             activeFeeder={activeFeeder}
             feedRate={feedRate}
-            onTogglePower={() =>
-              isFeeding ? handleStopFeed() : handleStartFeed()
-            }
+            isFeeding={isFeeding}
             onFeederChange={handleFeederChange}
             onRateChange={handleRateChange}
           />

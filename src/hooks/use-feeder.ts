@@ -35,13 +35,13 @@ export function useFeeder() {
       feederActive: false,
       isFeeding: false,
       activeFeeder: null,
-      feedRate: 5,
+      feedRate: 0,
     },
     second: {
       feederActive: false,
       isFeeding: false,
       activeFeeder: null,
-      feedRate: 5,
+      feedRate: 0,
     },
   });
 
@@ -60,66 +60,79 @@ export function useFeeder() {
    * Requires a side to be selected before feeding.
    * Order: setFeedRate → setFeederSide → setFeederPower
    */
-  const handleStartFeed = async () => {
+  // const handleStartFeed = async () => {
+  //   if (feederLoading) return;
+  //   if (!currentLayer.activeFeeder) return; // side must be selected first
+
+  //   try {
+  //     setFeederLoading(true);
+
+  //     await Promise.all([
+  //       setFeedRate(selectedLayer, currentLayer.feedRate),
+  //       setFeederSide(selectedLayer, currentLayer.activeFeeder),
+  //     ]);
+  //     await setFeederPower(selectedLayer, true);
+
+  //     setLayerStates((prev) => ({
+  //       ...prev,
+  //       [selectedLayer]: {
+  //         ...prev[selectedLayer],
+  //         feederActive: true,
+  //         isFeeding: true,
+  //       },
+  //     }));
+  //   } catch (error) {
+  //     console.error("Start feed failed:", error);
+  //   } finally {
+  //     setFeederLoading(false);
+  //   }
+  // };
+
+  const handleFeederChange = async (feeder: FeederSide) => {
     if (feederLoading) return;
-    if (!currentLayer.activeFeeder) return; // side must be selected first
+
+    const isTogglingOff = feeder === null;
 
     try {
       setFeederLoading(true);
 
-      await Promise.all([
-        setFeedRate(selectedLayer, currentLayer.feedRate),
-        setFeederSide(selectedLayer, currentLayer.activeFeeder),
-      ]);
-      await setFeederPower(selectedLayer, true);
+      if (isTogglingOff) {
+        // Power off — also stops any active feeding
+        await setFeederPower(selectedLayer, false);
 
-      setLayerStates((prev) => ({
-        ...prev,
-        [selectedLayer]: {
-          ...prev[selectedLayer],
-          feederActive: true,
-          isFeeding: true,
-        },
-      }));
-    } catch (error) {
-      console.error("Start feed failed:", error);
+        setLayerStates((prev) => ({
+          ...prev,
+          [selectedLayer]: {
+            ...prev[selectedLayer],
+            activeFeeder: null,
+            feederActive: false,
+            isFeeding: false,
+          },
+        }));
+      } else {
+        // Power on the selected side
+        await setFeederSide(selectedLayer, feeder);
+        await setFeederPower(selectedLayer, true);
+
+        setLayerStates((prev) => ({
+          ...prev,
+          [selectedLayer]: {
+            ...prev[selectedLayer],
+            activeFeeder: feeder,
+            feederActive: true,
+            isFeeding: false, // not feeding yet until rate is adjusted
+          },
+        }));
+      }
+    } catch (err) {
+      console.error("Feeder toggle failed:", err);
     } finally {
       setFeederLoading(false);
     }
   };
 
-  /**
-   * Stops feeder and clears active side.
-   */
-  const handleStopFeed = async () => {
-    if (feederLoading) return;
-
-    try {
-      setFeederLoading(true);
-
-      await setFeederPower(selectedLayer, false);
-
-      setLayerStates((prev) => ({
-        ...prev,
-        [selectedLayer]: {
-          ...prev[selectedLayer],
-          feederActive: false,
-          isFeeding: false,
-          activeFeeder: null,
-        },
-      }));
-    } catch (error) {
-      console.error("Stop feed failed:", error);
-    } finally {
-      setFeederLoading(false);
-    }
-  };
-
-  /**
-   * Updates feed rate in state.
-   * API call is deferred — rate is sent to ESP32 only when handleStartFeed is called.
-   */
-  const handleRateChange = (rate: number) => {
+  const handleRateChange = async (rate: number) => {
+    // Always update local state
     setLayerStates((prev) => ({
       ...prev,
       [selectedLayer]: {
@@ -127,28 +140,28 @@ export function useFeeder() {
         feedRate: rate,
       },
     }));
+
+    // Can't feed without feeder powered on
+    if (!currentLayer.feederActive || !currentLayer.activeFeeder) return;
+
+    try {
+      setFeederLoading(true);
+
+      await setFeedRate(selectedLayer, rate);
+
+      setLayerStates((prev) => ({
+        ...prev,
+        [selectedLayer]: {
+          ...prev[selectedLayer],
+          isFeeding: true,
+        },
+      }));
+    } catch (err) {
+      console.error("Feed rate update failed:", err);
+    } finally {
+      setFeederLoading(false);
+    }
   };
-
-  /**
-   * Toggles feeder side selection.
-   * Blocked while feeding — side can only be changed when stopped.
-   * Side is not sent to ESP32 here; it is sent when handleStartFeed is called.
-   */
-  const handleFeederChange = (feeder: FeederSide) => {
-    if (currentLayer.isFeeding) return; // block mid-feed changes
-
-    const current = currentLayer.activeFeeder;
-    const newValue = current === feeder ? null : feeder;
-
-    setLayerStates((prev) => ({
-      ...prev,
-      [selectedLayer]: {
-        ...prev[selectedLayer],
-        activeFeeder: newValue,
-      },
-    }));
-  };
-
   /*
   =========================================
   MACHINE CONTROLS
@@ -246,8 +259,8 @@ export function useFeeder() {
     feederLoading,
 
     // Feeder handlers
-    handleStartFeed,
-    handleStopFeed,
+    // handleStartFeed,
+    // handleStopFeed,
     handleRateChange,
     handleFeederChange,
 

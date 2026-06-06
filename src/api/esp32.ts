@@ -37,20 +37,20 @@ STATUS
 =========================================
 */
 
-export async function getStatus(): Promise<DeviceStatus> {
-  try {
-    const response = await fetch(`${API_URL}/status`);
+// export async function getStatus(): Promise<DeviceStatus> {
+//   try {
+//     const response = await fetch(`${API_URL}/status`);
 
-    if (!response.ok) {
-      throw new Error("Failed to fetch device status");
-    }
+//     if (!response.ok) {
+//       throw new Error("Failed to fetch device status");
+//     }
 
-    return response.json();
-  } catch (error) {
-    console.error("Error fetching status:", error);
-    throw error;
-  }
-}
+//     return response.json();
+//   } catch (error) {
+//     console.error("Error fetching status:", error);
+//     throw error;
+//   }
+// }
 
 /*
 =========================================
@@ -195,16 +195,16 @@ LAYER TOGGLES
  * First layer ON/OFF
  * Second layer ON/OFF
  */
-export async function setLayerState(firstLayer: boolean, secondLayer: boolean) {
-  const response = await fetch(`${API_URL}/feeder/layers`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      firstLayer,
-      secondLayer,
-    }),
-  });
+// export async function setLayerState(firstLayer: boolean, secondLayer: boolean) {
+//   const response = await fetch(`${API_URL}/feeder/layers`, {
+//     method: "PATCH",
+//     headers: { "Content-Type": "application/json" },
+//     body: JSON.stringify({
+//       firstLayer,
+//       secondLayer,
+//     }),
+//   });
 
-  if (!response.ok) throw new Error("Layer update failed");
-  return response.json();
-}
+//   if (!response.ok) throw new Error("Layer update failed");
+//   return response.json();
+// }

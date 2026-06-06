@@ -17,11 +17,10 @@ interface FeedRateControlProps {
 
 export function FeedRateControl({
   feedRate,
-  disabled = false,
   onRateChange,
 }: FeedRateControlProps) {
   return (
-    <Card style={[styles.card, disabled && styles.disabledCard]}>
+    <Card style={[styles.card]}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
@@ -43,7 +42,6 @@ export function FeedRateControl({
         step={0.5}
         value={feedRate}
         onValueChange={onRateChange}
-        disabled={disabled}
         minimumTrackTintColor={AgrimateColors.accent}
         maximumTrackTintColor={AgrimateColors.mutedBackground}
         thumbTintColor={AgrimateColors.accent}
