@@ -58,6 +58,7 @@ export function AgrimateDashboard() {
           <LayerSelector
             selectedLayer={selectedLayer}
             onLayerChange={setSelectedLayer}
+            disabled={isFeeding}
           />
 
           {/* ========================= */}

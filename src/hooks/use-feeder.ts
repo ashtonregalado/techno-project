@@ -1,3 +1,4 @@
+import type { FeederSide, Layer, MachineDirection } from "@/api/esp32";
 import {
   setFeedRate,
   setFeederPower,
@@ -13,11 +14,6 @@ import { useState } from "react";
 TYPES
 =========================================
 */
-type MachineDirection = "forward" | "reverse" | "stop";
-
-type FeederSide = "left" | "right" | "both" | null;
-
-type Layer = "first" | "second";
 
 interface LayerState {
   feederActive: boolean;
@@ -51,7 +47,7 @@ export function useFeeder() {
 
   const currentLayer = layerStates[selectedLayer];
 
-  const [feedLevel] = useState(80);
+  const [feedLevel, setFeedLevel] = useState(0);
   const [feederLoading, setFeederLoading] = useState(false);
 
   /*
@@ -60,17 +56,22 @@ export function useFeeder() {
   =========================================
   */
 
+  /**
+   * Requires a side to be selected before feeding.
+   * Order: setFeedRate → setFeederSide → setFeederPower
+   */
   const handleStartFeed = async () => {
     if (feederLoading) return;
+    if (!currentLayer.activeFeeder) return; // side must be selected first
 
     try {
       setFeederLoading(true);
 
-      const rate = currentLayer.feedRate;
-
-      await setFeedRate(selectedLayer, rate);
+      await Promise.all([
+        setFeedRate(selectedLayer, currentLayer.feedRate),
+        setFeederSide(selectedLayer, currentLayer.activeFeeder),
+      ]);
       await setFeederPower(selectedLayer, true);
-      await setFeederSide(selectedLayer, "left");
 
       setLayerStates((prev) => ({
         ...prev,
@@ -81,12 +82,15 @@ export function useFeeder() {
         },
       }));
     } catch (error) {
-      console.error(error);
+      console.error("Start feed failed:", error);
     } finally {
       setFeederLoading(false);
     }
   };
 
+  /**
+   * Stops feeder and clears active side.
+   */
   const handleStopFeed = async () => {
     if (feederLoading) return;
 
@@ -105,13 +109,17 @@ export function useFeeder() {
         },
       }));
     } catch (error) {
-      console.error(error);
+      console.error("Stop feed failed:", error);
     } finally {
       setFeederLoading(false);
     }
   };
 
-  const handleRateChange = async (rate: number) => {
+  /**
+   * Updates feed rate in state.
+   * API call is deferred — rate is sent to ESP32 only when handleStartFeed is called.
+   */
+  const handleRateChange = (rate: number) => {
     setLayerStates((prev) => ({
       ...prev,
       [selectedLayer]: {
@@ -119,17 +127,17 @@ export function useFeeder() {
         feedRate: rate,
       },
     }));
-
-    try {
-      await setFeedRate(selectedLayer, rate);
-    } catch (error) {
-      console.error("Feed rate update failed:", error);
-    }
   };
 
-  const handleFeederChange = async (feeder: FeederSide) => {
-    const current = currentLayer.activeFeeder;
+  /**
+   * Toggles feeder side selection.
+   * Blocked while feeding — side can only be changed when stopped.
+   * Side is not sent to ESP32 here; it is sent when handleStartFeed is called.
+   */
+  const handleFeederChange = (feeder: FeederSide) => {
+    if (currentLayer.isFeeding) return; // block mid-feed changes
 
+    const current = currentLayer.activeFeeder;
     const newValue = current === feeder ? null : feeder;
 
     setLayerStates((prev) => ({
@@ -139,29 +147,23 @@ export function useFeeder() {
         activeFeeder: newValue,
       },
     }));
-
-    try {
-      await setFeederSide(selectedLayer, newValue);
-    } catch (error) {
-      console.error("Feeder change failed:", error);
-    }
   };
 
   /*
   =========================================
-  MACHINE CONTROLS (UNCHANGED LOGIC)
+  MACHINE CONTROLS
   =========================================
   */
 
   const [isMachineRunning, setIsMachineRunning] = useState(false);
-
   const [machineDirection, setMachineDirectionState] =
     useState<MachineDirection>("stop");
-
   const [machineSpeed, setMachineSpeedState] = useState(0.3);
-
   const [machineLoading, setMachineLoading] = useState(false);
 
+  /**
+   * State is only updated if the API call succeeds.
+   */
   const handleStartMachine = async () => {
     if (machineLoading || isMachineRunning) return;
 
@@ -170,6 +172,8 @@ export function useFeeder() {
     try {
       await setMachinePower(true);
       setIsMachineRunning(true);
+    } catch (error) {
+      console.error("Machine start failed:", error);
     } finally {
       setMachineLoading(false);
     }
@@ -184,11 +188,17 @@ export function useFeeder() {
       await setMachinePower(false);
       setIsMachineRunning(false);
       setMachineDirectionState("stop");
+    } catch (error) {
+      console.error("Machine stop failed:", error);
     } finally {
       setMachineLoading(false);
     }
   };
 
+  /**
+   * Toggles direction — clicking the active direction sets it back to "stop".
+   * Blocked if machine is not running.
+   */
   const handleDirectionChange = async (dir: "forward" | "reverse") => {
     if (!isMachineRunning) return;
 
@@ -196,13 +206,22 @@ export function useFeeder() {
 
     setMachineDirectionState(newDir);
 
-    await setMachineDirection(newDir);
+    try {
+      await setMachineDirection(newDir);
+    } catch (error) {
+      console.error("Direction change failed:", error);
+      setMachineDirectionState(machineDirection); // revert on failure
+    }
   };
 
   const handleSpeedChange = async (speed: number) => {
     setMachineSpeedState(speed);
 
-    await setMachineSpeed(speed);
+    try {
+      await setMachineSpeed(speed);
+    } catch (error) {
+      console.error("Speed change failed:", error);
+    }
   };
 
   /*
@@ -212,27 +231,33 @@ export function useFeeder() {
   */
 
   return {
+    // Layer
     selectedLayer,
     setSelectedLayer,
 
+    // Feeder state (scoped to current layer)
     isFeeding: currentLayer.isFeeding,
     feederActive: currentLayer.feederActive,
     activeFeeder: currentLayer.activeFeeder,
     feedRate: currentLayer.feedRate,
 
+    // Feeder misc
     feedLevel,
     feederLoading,
 
+    // Feeder handlers
     handleStartFeed,
     handleStopFeed,
     handleRateChange,
     handleFeederChange,
 
+    // Machine state
     isMachineRunning,
     machineDirection,
     machineSpeed,
     machineLoading,
 
+    // Machine handlers
     handleStartMachine,
     handleStopMachine,
     handleDirectionChange,
