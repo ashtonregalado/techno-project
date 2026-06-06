@@ -9,6 +9,8 @@ TYPES
 */
 
 export type MachineDirection = "forward" | "reverse" | "stop";
+export type FeederSide = "left" | "right" | "both" | null;
+export type Layer = "first" | "second";
 
 export interface MachineStatus {
   active: boolean;
@@ -145,68 +147,40 @@ FEEDER CONTROLS
  * right=true
  */
 
-export async function setFeederPower(active: boolean) {
+export async function setFeederPower(layer: Layer, active: boolean) {
   const response = await fetch(`${API_URL}/feeder/power`, {
     method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      active,
-    }),
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ layer, active }),
   });
 
+  if (!response.ok) throw new Error("Feeder power failed");
   return response.json();
 }
 
-export async function setFeederSides(
-  left: boolean,
-  right: boolean,
-  both: boolean,
-) {
-  const response = await fetch(`${API_URL}/feeder/sides`, {
+export async function setFeederSide(layer: Layer, side: FeederSide) {
+  const response = await fetch(`${API_URL}/feeder/side`, {
     method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      left,
-      right,
-      both,
-    }),
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ layer, side }),
   });
 
-  if (!response.ok) {
-    throw new Error("Failed to set feeder sides");
-  }
-
+  if (!response.ok) throw new Error("Feeder side failed");
   return response.json();
 }
 
 /**
  * Feed rate slider
  */
-export async function setFeedRate(rate: number) {
-  try {
-    const response = await fetch(`${API_URL}/feeder/rate`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        rate,
-      }),
-    });
+export async function setFeedRate(layer: Layer, rate: number) {
+  const response = await fetch(`${API_URL}/feeder/rate`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ layer, rate }),
+  });
 
-    if (!response.ok) {
-      throw new Error("Failed to update feed rate");
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error("Feed rate error:", error);
-    throw error;
-  }
+  if (!response.ok) throw new Error("Feed rate failed");
+  return response.json();
 }
 
 /*
@@ -222,25 +196,15 @@ LAYER TOGGLES
  * Second layer ON/OFF
  */
 export async function setLayerState(firstLayer: boolean, secondLayer: boolean) {
-  try {
-    const response = await fetch(`${API_URL}/feeder/layers`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        firstLayer,
-        secondLayer,
-      }),
-    });
+  const response = await fetch(`${API_URL}/feeder/layers`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      firstLayer,
+      secondLayer,
+    }),
+  });
 
-    if (!response.ok) {
-      throw new Error("Failed to update layers");
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error("Layer update error:", error);
-    throw error;
-  }
+  if (!response.ok) throw new Error("Layer update failed");
+  return response.json();
 }

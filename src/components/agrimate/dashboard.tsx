@@ -1,6 +1,5 @@
 import { AgrimateColors, Spacing } from "@/constants/design";
 import { useFeeder } from "@/hooks/use-feeder";
-import { useState } from "react";
 import { SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
 import { FeederStatusCard } from "./feeder-status-card";
 import { AgrimateHeader } from "./header";
@@ -9,11 +8,13 @@ import { MachineControlCard } from "./machine-contol";
 
 export function AgrimateDashboard() {
   const {
+    // CURRENT LAYER
+    selectedLayer,
+    setSelectedLayer,
+
+    // FEEDER
     isFeeding,
     feedRate,
-    isMachineRunning,
-    machineDirection,
-    machineSpeed,
     activeFeeder,
 
     handleFeederChange,
@@ -21,19 +22,20 @@ export function AgrimateDashboard() {
     handleStopFeed,
     handleRateChange,
 
+    // MACHINE
+    isMachineRunning,
+    machineDirection,
+    machineSpeed,
+
     handleStartMachine,
     handleStopMachine,
     handleDirectionChange,
     handleSpeedChange,
   } = useFeeder();
 
-  const [selectedLayer, setSelectedLayer] = useState<"first" | "second">(
-    "first",
-  );
-
   /*
   =========================================
-  NORMALIZE DIRECTION (IMPORTANT FIX)
+  NORMALIZE DIRECTION
   =========================================
   */
   const normalizedDirection: "forward" | "reverse" | "stop" =
@@ -50,7 +52,9 @@ export function AgrimateDashboard() {
         <AgrimateHeader />
 
         <View style={styles.content}>
+          {/* ========================= */}
           {/* LAYER SELECTOR */}
+          {/* ========================= */}
           <LayerSelector
             selectedLayer={selectedLayer}
             onLayerChange={setSelectedLayer}
@@ -94,12 +98,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: AgrimateColors.background,
   },
+
   scrollView: {
     flex: 1,
   },
+
   scrollContent: {
     flexGrow: 1,
   },
+
   content: {
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.lg,
