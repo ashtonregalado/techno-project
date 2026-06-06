@@ -18,7 +18,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.sean_ashton.technoproject"
+      "package": "com.sean_ashton.technoproject",
+      "usesCleartextTraffic": true
     },
     "web": {
       "output": "static",
