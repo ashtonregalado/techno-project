@@ -47,7 +47,7 @@ export function FeederStatusCard({
               {activeFeeder === "both"
                 ? "Both Feeders"
                 : `${activeFeeder} Feeder`}{" "}
-              - {feedRate}g/s
+              - {feedRate} g/s
             </Text>
           </View>
 
@@ -197,7 +197,7 @@ export function FeederStatusCard({
         </View>
 
         {/* FEED RATE */}
-        <View style={[styles.rateWrapper, !feederActive && styles.disabled]}>
+        <View style={[styles.rateWrapper]}>
           <FeedRateControl
             feedRate={feedRate}
             onRateChange={onRateChange}

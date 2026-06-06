@@ -21,7 +21,7 @@ export function FeedRateControl({
   onRateChange,
 }: FeedRateControlProps) {
   return (
-    <Card style={[styles.card]}>
+    <Card style={[styles.card, disabled && styles.disabledCard]}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
@@ -114,5 +114,9 @@ const styles = StyleSheet.create({
     fontSize: Typography.fontSize.xs,
     color: AgrimateColors.textMuted,
     fontWeight: "500",
+  },
+
+  disabledCard: {
+    opacity: 0.4,
   },
 });

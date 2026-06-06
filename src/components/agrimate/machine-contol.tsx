@@ -61,7 +61,7 @@ export function MachineControlCard({
 
             {direction && (
               <Text style={styles.subtitle}>
-                {direction} - {speed}%
+                {direction} - {speed} m/s
               </Text>
             )}
           </View>
