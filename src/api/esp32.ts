@@ -69,19 +69,21 @@ MACHINE CONTROLS
  */
 
 export async function setMachinePower(active: boolean) {
-  const response = await fetch(`${API_URL}/machine/power`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      active,
-    }),
-  });
+  try {
+    const response = await fetch(`${API_URL}/machine/power`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ active }),
+    });
 
-  return response.json();
+    if (!response.ok) throw new Error("Failed to update machine power");
+
+    return response.json();
+  } catch (error) {
+    console.error("Machine power error:", error);
+    throw error;
+  }
 }
-
 export async function setMachineDirection(direction: MachineDirection) {
   try {
     const response = await fetch(`${API_URL}/machine/movement`, {
@@ -101,32 +103,6 @@ export async function setMachineDirection(direction: MachineDirection) {
     return response.json();
   } catch (error) {
     console.error("Machine movement error:", error);
-    throw error;
-  }
-}
-
-/**
- * Speed slider
- */
-export async function setMachineSpeed(speed: number) {
-  try {
-    const response = await fetch(`${API_URL}/machine/speed`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        speed,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to update speed");
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error("Machine speed error:", error);
     throw error;
   }
 }

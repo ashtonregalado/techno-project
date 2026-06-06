@@ -23,12 +23,9 @@ export function AgrimateDashboard() {
     // MACHINE
     isMachineRunning,
     machineDirection,
-    machineSpeed,
 
-    handleStartMachine,
-    handleStopMachine,
+    handleTogglePower,
     handleDirectionChange,
-    handleSpeedChange,
   } = useFeeder();
 
   /*
@@ -36,8 +33,6 @@ export function AgrimateDashboard() {
   NORMALIZE DIRECTION
   =========================================
   */
-  const normalizedDirection: "forward" | "reverse" | "stop" =
-    machineDirection ?? "stop";
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -76,13 +71,9 @@ export function AgrimateDashboard() {
           {/* ========================= */}
           <MachineControlCard
             isActive={isMachineRunning}
-            direction={normalizedDirection}
-            speed={machineSpeed}
-            onTogglePower={() =>
-              isMachineRunning ? handleStopMachine() : handleStartMachine()
-            }
+            direction={machineDirection}
+            onTogglePower={handleTogglePower}
             onDirectionChange={handleDirectionChange}
-            onSpeedChange={handleSpeedChange}
           />
         </View>
       </ScrollView>

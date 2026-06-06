@@ -1,42 +1,20 @@
-import {
-  AgrimateColors,
-  BorderRadius,
-  Spacing,
-  Typography,
-} from "@/constants/design";
-import Slider from "@react-native-community/slider";
+import { AgrimateColors, Spacing } from "@/constants/design";
 import { LinearGradient } from "expo-linear-gradient";
-import {
-  Boxes,
-  ChevronsLeft,
-  ChevronsRight,
-  Gauge,
-  Power,
-} from "lucide-react-native";
-import { Card } from "./card";
-
+import { Boxes, ChevronsLeft, ChevronsRight, Power } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 interface Props {
   isActive: boolean;
-
   direction: "forward" | "reverse" | "stop";
-
-  speed: number;
-
   onTogglePower?: () => void;
-
   onDirectionChange?: (dir: "forward" | "reverse") => void;
-
-  onSpeedChange?: (value: number) => void;
 }
+
 export function MachineControlCard({
   isActive,
   direction,
-  speed,
   onTogglePower,
   onDirectionChange,
-  onSpeedChange,
 }: Props) {
   return (
     <View style={styles.card}>
@@ -59,10 +37,8 @@ export function MachineControlCard({
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>Machine Movement</Text>
 
-            {direction && (
-              <Text style={styles.subtitle}>
-                {direction} - {speed} m/s
-              </Text>
+            {direction !== "stop" && (
+              <Text style={styles.subtitle}>{direction}</Text>
             )}
           </View>
 
@@ -78,13 +54,10 @@ export function MachineControlCard({
                 isActive ? styles.statusDotOn : styles.statusDotOff,
               ]}
             />
-
             <Text
               style={[
                 styles.statusText,
-                !isActive && {
-                  color: AgrimateColors.primary,
-                },
+                !isActive && { color: AgrimateColors.primary },
               ]}
             >
               {isActive ? "ON" : "OFF"}
@@ -106,11 +79,11 @@ export function MachineControlCard({
           <View style={styles.powerIconCircle}>
             <Power size={16} color="#fff" />
           </View>
-
           <Text style={styles.powerText}>
             {isActive ? "Power ON" : "Power OFF"}
           </Text>
         </Pressable>
+
         {/* DIRECTION BUTTONS */}
         <View style={styles.directionRow}>
           {/* Reverse */}
@@ -136,7 +109,6 @@ export function MachineControlCard({
                 }
               />
             </View>
-
             <Text
               style={[
                 styles.directionText,
@@ -170,7 +142,6 @@ export function MachineControlCard({
                 }
               />
             </View>
-
             <Text
               style={[
                 styles.directionText,
@@ -181,43 +152,6 @@ export function MachineControlCard({
             </Text>
           </Pressable>
         </View>
-
-        {/* SPEED */}
-        <Card style={[styles.speedCard, !isActive && styles.disabled]}>
-          {/* Header */}
-          <View style={styles.speedHeader}>
-            <View style={styles.headerLeft}>
-              <View style={styles.iconContainer}>
-                <Gauge size={20} color={AgrimateColors.primary} />
-              </View>
-
-              <Text style={styles.speedTitle}>Speed</Text>
-            </View>
-
-            <Text style={styles.speedValue}>{speed.toFixed(1)} m/s</Text>
-          </View>
-
-          {/* Slider */}
-          <Slider
-            style={styles.slider}
-            minimumValue={0.1}
-            maximumValue={0.5}
-            step={0.1}
-            value={speed}
-            onValueChange={onSpeedChange}
-            disabled={!isActive}
-            minimumTrackTintColor={AgrimateColors.accent}
-            maximumTrackTintColor={AgrimateColors.mutedBackground}
-            thumbTintColor={AgrimateColors.accent}
-          />
-
-          {/* Labels */}
-          <View style={styles.speedLabels}>
-            <Text style={styles.speedLabelText}>0.1 m/s</Text>
-            <Text style={styles.speedLabelText}>0.3 m/s</Text>
-            <Text style={styles.speedLabelText}>0.5 m/s</Text>
-          </View>
-        </Card>
       </View>
     </View>
   );
@@ -405,63 +339,7 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
 
-  speedCard: {
-    padding: Spacing.xs,
-    marginBottom: Spacing.xxs,
-  },
-
-  speedHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: Spacing.xs,
-  },
-
-  speedTitle: {
-    fontSize: Typography.fontSize.sm,
-    fontWeight: "700",
-    color: AgrimateColors.text,
-  },
-
-  speedValue: {
-    fontSize: Typography.fontSize.sm,
-    fontWeight: "700",
-    color: AgrimateColors.accent,
-  },
-
-  slider: {
-    width: "100%",
-    height: 40,
-    marginBottom: 4,
-  },
-
-  speedLabels: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-
-  speedLabelText: {
-    fontSize: Typography.fontSize.xs,
-    color: AgrimateColors.textMuted,
-    fontWeight: "500",
-  },
-
   disabled: {
     opacity: 0.4,
-  },
-
-  iconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: BorderRadius.md,
-    backgroundColor: "rgba(27, 67, 50, 0.08)", // primary/10
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Spacing.sm,
   },
 });

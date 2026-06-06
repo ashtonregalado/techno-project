@@ -5,7 +5,6 @@ import {
   setFeederSide,
   setMachineDirection,
   setMachinePower,
-  setMachineSpeed,
 } from "@/api/esp32";
 import { useState } from "react";
 
@@ -55,38 +54,6 @@ export function useFeeder() {
   FEEDER CONTROLS
   =========================================
   */
-
-  /**
-   * Requires a side to be selected before feeding.
-   * Order: setFeedRate → setFeederSide → setFeederPower
-   */
-  // const handleStartFeed = async () => {
-  //   if (feederLoading) return;
-  //   if (!currentLayer.activeFeeder) return; // side must be selected first
-
-  //   try {
-  //     setFeederLoading(true);
-
-  //     await Promise.all([
-  //       setFeedRate(selectedLayer, currentLayer.feedRate),
-  //       setFeederSide(selectedLayer, currentLayer.activeFeeder),
-  //     ]);
-  //     await setFeederPower(selectedLayer, true);
-
-  //     setLayerStates((prev) => ({
-  //       ...prev,
-  //       [selectedLayer]: {
-  //         ...prev[selectedLayer],
-  //         feederActive: true,
-  //         isFeeding: true,
-  //       },
-  //     }));
-  //   } catch (error) {
-  //     console.error("Start feed failed:", error);
-  //   } finally {
-  //     setFeederLoading(false);
-  //   }
-  // };
 
   const handleFeederChange = async (feeder: FeederSide) => {
     if (feederLoading) return;
@@ -162,6 +129,7 @@ export function useFeeder() {
       setFeederLoading(false);
     }
   };
+
   /*
   =========================================
   MACHINE CONTROLS
@@ -171,45 +139,31 @@ export function useFeeder() {
   const [isMachineRunning, setIsMachineRunning] = useState(false);
   const [machineDirection, setMachineDirectionState] =
     useState<MachineDirection>("stop");
-  const [machineSpeed, setMachineSpeedState] = useState(0.3);
   const [machineLoading, setMachineLoading] = useState(false);
 
-  /**
-   * State is only updated if the API call succeeds.
-   */
-  const handleStartMachine = async () => {
-    if (machineLoading || isMachineRunning) return;
+  const handleTogglePower = async () => {
+    if (machineLoading) return;
 
     setMachineLoading(true);
 
     try {
-      await setMachinePower(true);
-      setIsMachineRunning(true);
+      if (isMachineRunning) {
+        await setMachinePower(false);
+        setIsMachineRunning(false);
+        setMachineDirectionState("stop");
+      } else {
+        await setMachinePower(true);
+        setIsMachineRunning(true);
+      }
     } catch (error) {
-      console.error("Machine start failed:", error);
-    } finally {
-      setMachineLoading(false);
-    }
-  };
-
-  const handleStopMachine = async () => {
-    if (machineLoading || !isMachineRunning) return;
-
-    setMachineLoading(true);
-
-    try {
-      await setMachinePower(false);
-      setIsMachineRunning(false);
-      setMachineDirectionState("stop");
-    } catch (error) {
-      console.error("Machine stop failed:", error);
+      console.error("Machine power toggle failed:", error);
     } finally {
       setMachineLoading(false);
     }
   };
 
   /**
-   * Toggles direction — clicking the active direction sets it back to "stop".
+   * Toggles direction — tapping the active direction sets it back to "stop".
    * Blocked if machine is not running.
    */
   const handleDirectionChange = async (dir: "forward" | "reverse") => {
@@ -224,16 +178,6 @@ export function useFeeder() {
     } catch (error) {
       console.error("Direction change failed:", error);
       setMachineDirectionState(machineDirection); // revert on failure
-    }
-  };
-
-  const handleSpeedChange = async (speed: number) => {
-    setMachineSpeedState(speed);
-
-    try {
-      await setMachineSpeed(speed);
-    } catch (error) {
-      console.error("Speed change failed:", error);
     }
   };
 
@@ -259,21 +203,16 @@ export function useFeeder() {
     feederLoading,
 
     // Feeder handlers
-    // handleStartFeed,
-    // handleStopFeed,
     handleRateChange,
     handleFeederChange,
 
     // Machine state
     isMachineRunning,
     machineDirection,
-    machineSpeed,
     machineLoading,
 
     // Machine handlers
-    handleStartMachine,
-    handleStopMachine,
+    handleTogglePower,
     handleDirectionChange,
-    handleSpeedChange,
   };
 }
