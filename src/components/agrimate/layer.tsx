@@ -5,12 +5,17 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 interface LayerSelectorProps {
   selectedLayer: "first" | "second";
   onLayerChange: (layer: "first" | "second") => void;
+  disabled?: boolean;
 }
 
 export function LayerSelector({
   selectedLayer,
   onLayerChange,
+  disabled = false,
 }: LayerSelectorProps) {
+  const layerLabel =
+    selectedLayer.charAt(0).toUpperCase() + selectedLayer.slice(1);
+
   return (
     <View style={styles.card}>
       <View style={styles.row}>
@@ -20,22 +25,27 @@ export function LayerSelector({
             <Layers size={16} color={AgrimateColors.primary} />
           </View>
 
-          <Text style={styles.label}>Layer</Text>
+          <Text style={styles.label}>{layerLabel} Layer</Text>
         </View>
 
         {/* Right Section */}
         <View style={styles.buttonGroup}>
           <Pressable
-            onPress={() => onLayerChange("first")}
+            onPress={() => {
+              if (!disabled) onLayerChange("first");
+            }}
+            disabled={disabled}
             style={[
               styles.layerButton,
               selectedLayer === "first" && styles.activeButton,
+              disabled && styles.disabledButton,
             ]}
           >
             <Text
               style={[
                 styles.buttonText,
                 selectedLayer === "first" && styles.activeButtonText,
+                disabled && styles.disabledFirstButtonText,
               ]}
             >
               First
@@ -43,16 +53,21 @@ export function LayerSelector({
           </Pressable>
 
           <Pressable
-            onPress={() => onLayerChange("second")}
+            onPress={() => {
+              if (!disabled) onLayerChange("second");
+            }}
+            disabled={disabled}
             style={[
               styles.layerButton,
               selectedLayer === "second" && styles.activeButton,
+              disabled && styles.disabledButton,
             ]}
           >
             <Text
               style={[
                 styles.buttonText,
                 selectedLayer === "second" && styles.activeButtonText,
+                disabled && styles.disabledSecondButtonText,
               ]}
             >
               Second
@@ -122,6 +137,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#F3F4F6",
   },
 
+  disabledButton: {
+    opacity: 0.4,
+  },
+
   activeButton: {
     backgroundColor: AgrimateColors.primary,
 
@@ -139,6 +158,15 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "700",
     color: "#6B7280",
+  },
+
+  disabledFirstButtonText: {
+    // color: "#9CA3AF",
+    color: "#fff",
+  },
+
+  disabledSecondButtonText: {
+    color: "#9CA3AF",
   },
 
   activeButtonText: {
