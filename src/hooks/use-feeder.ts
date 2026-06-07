@@ -88,6 +88,7 @@ export function useFeeder() {
             activeFeeder: feeder,
             feederActive: true,
             isFeeding: false, // not feeding yet until rate is adjusted
+            feedRate: 0,
           },
         }));
       }
