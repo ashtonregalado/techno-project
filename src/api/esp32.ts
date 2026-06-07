@@ -116,11 +116,11 @@ FEEDER CONTROLS
  * active=false → feeder powered off, side reset to null
  */
 
-export async function setFeederPower(layer: Layer, active: boolean) {
+export async function setFeederPower(active: boolean) {
   const response = await fetch(`${API_URL}/feeder/power`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ layer, active }),
+    body: JSON.stringify({ active }),
   });
 
   if (!response.ok) throw new Error("Feeder power failed");
@@ -132,11 +132,11 @@ export async function setFeederPower(layer: Layer, active: boolean) {
  * side="both" → start feeding
  * side=null   → stop feeding
  */
-export async function setFeederSide(layer: Layer, side: FeederSide) {
+export async function setFeederSide(side: FeederSide) {
   const response = await fetch(`${API_URL}/feeder/side`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ layer, side }),
+    body: JSON.stringify({ side }),
   });
 
   if (!response.ok) throw new Error("Feeder side failed");
@@ -148,6 +148,23 @@ export async function setFeederSide(layer: Layer, side: FeederSide) {
 LAYER TOGGLES
 =========================================
 */
+
+export async function setFeederLayer(layer: Layer) {
+  try {
+    const response = await fetch(`${API_URL}/feeder/layer`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ layer }),
+    });
+
+    if (!response.ok) throw new Error("Failed to update feeder layer");
+
+    return response.json();
+  } catch (error) {
+    console.error("Feeder layer error:", error);
+    throw error;
+  }
+}
 
 /**
  * Toggle switches

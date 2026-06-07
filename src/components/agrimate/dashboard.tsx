@@ -10,7 +10,6 @@ export function AgrimateDashboard() {
   const {
     // CURRENT LAYER
     selectedLayer,
-    setSelectedLayer,
 
     // FEEDER
     isFeeding,
@@ -27,6 +26,11 @@ export function AgrimateDashboard() {
     handleTogglePower,
     handleDirectionChange,
     handleToggleFeederPower,
+
+    handleLayerChange,
+    layerLoading,
+    feederLoading,
+    machineLoading,
   } = useFeeder();
 
   /*
@@ -51,8 +55,8 @@ export function AgrimateDashboard() {
           {/* ========================= */}
           <LayerSelector
             selectedLayer={selectedLayer}
-            onLayerChange={setSelectedLayer}
-            disabled={isFeeding}
+            onLayerChange={handleLayerChange}
+            disabled={layerLoading || feederLoading || machineLoading}
           />
           {/* ========================= */}
           {/* FEEDER */}
