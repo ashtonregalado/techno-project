@@ -9,7 +9,7 @@ TYPES
 */
 
 export type MachineDirection = "forward" | "reverse" | "stop";
-export type FeederSide = "left" | "right" | "both" | null;
+export type FeederSide = "both" | null;
 export type Layer = "first" | "second";
 
 export interface MachineStatus {
@@ -19,9 +19,6 @@ export interface MachineStatus {
 }
 
 export interface FeederStatus {
-  left: boolean;
-  right: boolean;
-  feedRate: number;
   firstLayer: boolean;
   secondLayer: boolean;
 }
@@ -114,13 +111,9 @@ FEEDER CONTROLS
 */
 
 /**
- * Toggle feeder buttons
- *
- * Left button:
- * left=true
- *
- * Right button:
- * right=true
+ * Toggles the feeder on/off for a given layer.
+ * active=true  → feeder powered on
+ * active=false → feeder powered off, side reset to null
  */
 
 export async function setFeederPower(layer: Layer, active: boolean) {
@@ -134,6 +127,11 @@ export async function setFeederPower(layer: Layer, active: boolean) {
   return response.json();
 }
 
+/**
+ * Sets the active feeder side for a given layer.
+ * side="both" → start feeding
+ * side=null   → stop feeding
+ */
 export async function setFeederSide(layer: Layer, side: FeederSide) {
   const response = await fetch(`${API_URL}/feeder/side`, {
     method: "PATCH",
@@ -142,20 +140,6 @@ export async function setFeederSide(layer: Layer, side: FeederSide) {
   });
 
   if (!response.ok) throw new Error("Feeder side failed");
-  return response.json();
-}
-
-/**
- * Feed rate slider
- */
-export async function setFeedRate(layer: Layer, rate: number) {
-  const response = await fetch(`${API_URL}/feeder/rate`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ layer, rate }),
-  });
-
-  if (!response.ok) throw new Error("Feed rate failed");
   return response.json();
 }
 

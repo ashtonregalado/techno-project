@@ -16,9 +16,9 @@ export function AgrimateDashboard() {
     isFeeding,
     feedRate,
     activeFeeder,
+    feederActive,
 
     handleFeederChange,
-    handleRateChange,
 
     // MACHINE
     isMachineRunning,
@@ -26,6 +26,7 @@ export function AgrimateDashboard() {
 
     handleTogglePower,
     handleDirectionChange,
+    handleToggleFeederPower,
   } = useFeeder();
 
   /*
@@ -53,19 +54,17 @@ export function AgrimateDashboard() {
             onLayerChange={setSelectedLayer}
             disabled={isFeeding}
           />
-
           {/* ========================= */}
           {/* FEEDER */}
           {/* ========================= */}
+
           <FeederStatusCard
-            feederActive={!!activeFeeder}
+            feederActive={feederActive}
             activeFeeder={activeFeeder}
-            feedRate={feedRate}
             isFeeding={isFeeding}
             onFeederChange={handleFeederChange}
-            onRateChange={handleRateChange}
+            onTogglePower={handleToggleFeederPower} // ← add this
           />
-
           {/* ========================= */}
           {/* MACHINE */}
           {/* ========================= */}

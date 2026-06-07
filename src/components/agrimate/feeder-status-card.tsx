@@ -1,30 +1,24 @@
 import { AgrimateColors, Spacing } from "@/constants/design";
 import { LinearGradient } from "expo-linear-gradient";
-import { ArrowLeft, ArrowRight, Bird } from "lucide-react-native";
+import { Bird, Power } from "lucide-react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { FeedRateControl } from "./feed-rate-control";
 
-type FeederSide = "left" | "right" | "both" | null;
+type FeederSide = "both" | null;
 
 interface Props {
   feederActive: boolean;
   activeFeeder: FeederSide;
-  feedRate: number;
   isFeeding?: boolean;
-
   onFeederChange?: (feeder: FeederSide) => void;
-  onRateChange?: (value: number) => void;
-  onStopFeed?: () => void;
+  onTogglePower?: () => void;
 }
 
 export function FeederStatusCard({
   feederActive,
   activeFeeder,
-  feedRate,
   isFeeding,
   onFeederChange,
-  onRateChange,
-  onStopFeed,
+  onTogglePower,
 }: Props) {
   return (
     <View style={styles.card}>
@@ -35,7 +29,6 @@ export function FeederStatusCard({
         end={{ x: 1, y: 1 }}
         style={styles.header}
       >
-        {/* Decorative circles */}
         <View style={[styles.decCircle, styles.decCircleTop]} />
         <View style={[styles.decCircle, styles.decCircleBottom]} />
 
@@ -51,8 +44,7 @@ export function FeederStatusCard({
                 ? activeFeeder === "both"
                   ? "Both Feeders"
                   : `${activeFeeder} Feeder`
-                : "No side selected"}{" "}
-              {activeFeeder ? `— ${feedRate} g/s` : ""}
+                : "No side selected"}
             </Text>
           </View>
 
@@ -91,124 +83,58 @@ export function FeederStatusCard({
 
       {/* BODY */}
       <View style={styles.body}>
-        {/* HINT */}
-        <Text style={styles.hint}>
-          {!activeFeeder
-            ? "Select a side to power on the feeder"
-            : !isFeeding
-              ? "Feeder is on — adjust rate to start feeding"
-              : "Feeding in progress — adjust rate or stop below"}
+        <Text style={styles.subtitle}>
+          {activeFeeder ? "Both Feeders" : "No side selected"}
         </Text>
-
-        {/* FEEDER SIDE BUTTONS */}
-        <View style={styles.grid3}>
-          {/* LEFT */}
-          <Pressable
-            onPress={() =>
-              onFeederChange?.(activeFeeder === "left" ? null : "left")
-            }
-            style={[
-              styles.feederBtn,
-              activeFeeder === "left" && styles.activeBtn,
-            ]}
-          >
-            <View
-              style={[
-                styles.feederIcon,
-                activeFeeder === "left" && styles.activeIcon,
-              ]}
-            >
-              <ArrowLeft
-                size={16}
-                color={
-                  activeFeeder === "left" ? "#fff" : AgrimateColors.primary
-                }
-              />
-            </View>
-            <Text
-              style={[
-                styles.feederText,
-                activeFeeder === "left" && styles.activeText,
-              ]}
-            >
-              Left
-            </Text>
-          </Pressable>
-
-          {/* BOTH */}
-          <Pressable
-            onPress={() =>
-              onFeederChange?.(activeFeeder === "both" ? null : "both")
-            }
-            style={[
-              styles.feederBtn,
-              activeFeeder === "both" && styles.activeBtn,
-            ]}
-          >
-            <View
-              style={[
-                styles.feederIcon,
-                activeFeeder === "both" && styles.activeIcon,
-              ]}
-            >
-              <Bird
-                size={16}
-                color={
-                  activeFeeder === "both" ? "#fff" : AgrimateColors.primary
-                }
-              />
-            </View>
-            <Text
-              style={[
-                styles.feederText,
-                activeFeeder === "both" && styles.activeText,
-              ]}
-            >
-              Both
-            </Text>
-          </Pressable>
-
-          {/* RIGHT */}
-          <Pressable
-            onPress={() =>
-              onFeederChange?.(activeFeeder === "right" ? null : "right")
-            }
-            style={[
-              styles.feederBtn,
-              activeFeeder === "right" && styles.activeBtn,
-            ]}
-          >
-            <View
-              style={[
-                styles.feederIcon,
-                activeFeeder === "right" && styles.activeIcon,
-              ]}
-            >
-              <ArrowRight
-                size={16}
-                color={
-                  activeFeeder === "right" ? "#fff" : AgrimateColors.primary
-                }
-              />
-            </View>
-            <Text
-              style={[
-                styles.feederText,
-                activeFeeder === "right" && styles.activeText,
-              ]}
-            >
-              Right
-            </Text>
-          </Pressable>
-        </View>
-
-        {/* FEED RATE — disabled until a side is selected */}
-        <View
-          style={[styles.rateWrapper, !activeFeeder && styles.disabled]}
-          pointerEvents={!activeFeeder ? "none" : "auto"}
+        {/* POWER BUTTON */}
+        <Pressable
+          onPress={onTogglePower}
+          style={[
+            styles.powerButton,
+            feederActive ? styles.powerOn : styles.powerOff,
+          ]}
         >
-          <FeedRateControl feedRate={feedRate} onRateChange={onRateChange} />
-        </View>
+          <View style={styles.powerIcon}>
+            <Power size={16} color="#fff" />
+          </View>
+          <Text style={styles.powerText}>
+            {feederActive ? "Power ON" : "Power OFF"}
+          </Text>
+        </Pressable>
+
+        {/* FEEDER SIDE BUTTONS — disabled until powered on */}
+        <Pressable
+          onPress={() =>
+            onFeederChange?.(activeFeeder === "both" ? null : "both")
+          }
+          style={[
+            styles.feederBtn,
+            styles.feederBtnFull,
+            activeFeeder === "both" && styles.activeBtn,
+            !feederActive && styles.disabled,
+          ]}
+          disabled={!feederActive}
+        >
+          <View
+            style={[
+              styles.feederIcon,
+              activeFeeder === "both" && styles.activeIcon,
+            ]}
+          >
+            <Bird
+              size={18}
+              color={activeFeeder === "both" ? "#fff" : AgrimateColors.primary}
+            />
+          </View>
+          <Text
+            style={[
+              styles.feederText,
+              activeFeeder === "both" && styles.activeText,
+            ]}
+          >
+            {activeFeeder === "both" ? "Stop Feeding" : "Start Feeding"}
+          </Text>
+        </Pressable>
       </View>
     </View>
   );
@@ -400,5 +326,44 @@ const styles = StyleSheet.create({
 
   disabled: {
     opacity: 0.4,
+  },
+
+  powerButton: {
+    borderRadius: 12,
+    paddingVertical: 10,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+  },
+
+  powerOn: {
+    backgroundColor: AgrimateColors.accent,
+  },
+
+  powerOff: {
+    backgroundColor: "#DC2626",
+  },
+
+  powerIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  powerText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 14,
+  },
+
+  feederBtnFull: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 10,
+    paddingVertical: 12,
   },
 });

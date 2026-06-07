@@ -1,6 +1,5 @@
 import type { FeederSide, Layer, MachineDirection } from "@/api/esp32";
 import {
-  setFeedRate,
   setFeederPower,
   setFeederSide,
   setMachineDirection,
@@ -55,82 +54,70 @@ export function useFeeder() {
   =========================================
   */
 
-  const handleFeederChange = async (feeder: FeederSide) => {
+  const handleToggleFeederPower = async () => {
     if (feederLoading) return;
-
-    const isTogglingOff = feeder === null;
-
+    setFeederLoading(true);
     try {
-      setFeederLoading(true);
-
-      if (isTogglingOff) {
-        // Power off — also stops any active feeding
+      if (currentLayer.feederActive) {
         await setFeederPower(selectedLayer, false);
+        setLayerStates((prev) => ({
+          ...prev,
+          [selectedLayer]: {
+            ...prev[selectedLayer],
+            feederActive: false,
+            activeFeeder: null,
+            isFeeding: false,
+            feedRate: 0,
+          },
+        }));
+      } else {
+        await setFeederPower(selectedLayer, true);
+        setLayerStates((prev) => ({
+          ...prev,
+          [selectedLayer]: {
+            ...prev[selectedLayer],
+            feederActive: true,
+          },
+        }));
+      }
+    } catch (err) {
+      console.error("Feeder power toggle failed:", err);
+    } finally {
+      setFeederLoading(false);
+    }
+  };
 
+  const handleFeederChange = async (feeder: FeederSide) => {
+    if (feederLoading || !currentLayer.feederActive) return;
+    setFeederLoading(true);
+    try {
+      if (feeder === null) {
+        await setFeederSide(selectedLayer, null);
         setLayerStates((prev) => ({
           ...prev,
           [selectedLayer]: {
             ...prev[selectedLayer],
             activeFeeder: null,
-            feederActive: false,
             isFeeding: false,
           },
         }));
       } else {
-        // Power on the selected side
         await setFeederSide(selectedLayer, feeder);
-        await setFeederPower(selectedLayer, true);
-
         setLayerStates((prev) => ({
           ...prev,
           [selectedLayer]: {
             ...prev[selectedLayer],
             activeFeeder: feeder,
-            feederActive: true,
-            isFeeding: false, // not feeding yet until rate is adjusted
-            feedRate: 0,
+            isFeeding: true,
           },
         }));
       }
     } catch (err) {
-      console.error("Feeder toggle failed:", err);
+      console.error("Feeder side change failed:", err);
     } finally {
       setFeederLoading(false);
     }
   };
-
-  const handleRateChange = async (rate: number) => {
-    // Always update local state
-    setLayerStates((prev) => ({
-      ...prev,
-      [selectedLayer]: {
-        ...prev[selectedLayer],
-        feedRate: rate,
-      },
-    }));
-
-    // Can't feed without feeder powered on
-    if (!currentLayer.feederActive || !currentLayer.activeFeeder) return;
-
-    try {
-      setFeederLoading(true);
-
-      await setFeedRate(selectedLayer, rate);
-
-      setLayerStates((prev) => ({
-        ...prev,
-        [selectedLayer]: {
-          ...prev[selectedLayer],
-          isFeeding: true,
-        },
-      }));
-    } catch (err) {
-      console.error("Feed rate update failed:", err);
-    } finally {
-      setFeederLoading(false);
-    }
-  };
-
   /*
   =========================================
   MACHINE CONTROLS
@@ -204,7 +191,7 @@ export function useFeeder() {
     feederLoading,
 
     // Feeder handlers
-    handleRateChange,
+    handleToggleFeederPower,
     handleFeederChange,
 
     // Machine state
