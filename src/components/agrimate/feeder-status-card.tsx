@@ -1,7 +1,13 @@
 import { AgrimateColors, Spacing } from "@/constants/design";
 import { LinearGradient } from "expo-linear-gradient";
 import { Bird, Power } from "lucide-react-native";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 type FeederSide = "both" | null;
 
@@ -9,14 +15,20 @@ interface Props {
   feederActive: boolean;
   activeFeeder: FeederSide;
   isFeeding?: boolean;
+
+  powerLoading?: boolean;
+  feedingLoading?: boolean;
+
   onFeederChange?: (feeder: FeederSide) => void;
+
   onTogglePower?: () => void;
 }
-
 export function FeederStatusCard({
   feederActive,
   activeFeeder,
   isFeeding,
+  powerLoading,
+  feedingLoading,
   onFeederChange,
   onTogglePower,
 }: Props) {
@@ -39,13 +51,9 @@ export function FeederStatusCard({
 
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>Feeder Control</Text>
-            <Text style={styles.subtitle}>
-              {activeFeeder
-                ? activeFeeder === "both"
-                  ? "Both Feeders"
-                  : `${activeFeeder} Feeder`
-                : "No side selected"}
-            </Text>
+            {isFeeding != false && (
+              <Text style={styles.subtitle}>{isFeeding ? "Feeding" : ""}</Text>
+            )}
           </View>
 
           <View
@@ -75,7 +83,7 @@ export function FeederStatusCard({
                   !isFeeding && { color: AgrimateColors.primary },
               ]}
             >
-              {isFeeding ? "FEEDING" : feederActive ? "ON" : "OFF"}
+              {feederActive ? "ON" : "OFF"}
             </Text>
           </View>
         </View>
@@ -93,15 +101,30 @@ export function FeederStatusCard({
             styles.powerButton,
             feederActive ? styles.powerOn : styles.powerOff,
           ]}
+          disabled={powerLoading}
         >
-          <View style={styles.powerIcon}>
-            <Power size={16} color="#fff" />
-          </View>
-          <Text style={styles.powerText}>
-            {feederActive ? "Power ON" : "Power OFF"}
-          </Text>
-        </Pressable>
+          {powerLoading ? (
+            <>
+              <View style={styles.powerIcon}>
+                <ActivityIndicator color="#fff" size="small" />
+              </View>
 
+              <Text style={styles.powerText}>
+                {feederActive ? "Powering Off..." : "Powering On..."}
+              </Text>
+            </>
+          ) : (
+            <>
+              <View style={styles.powerIcon}>
+                <Power size={16} color="#fff" />
+              </View>
+
+              <Text style={styles.powerText}>
+                {feederActive ? "Power ON" : "Power OFF"}
+              </Text>
+            </>
+          )}
+        </Pressable>
         {/* FEEDER SIDE BUTTONS — disabled until powered on */}
         <Pressable
           onPress={() =>
@@ -111,29 +134,63 @@ export function FeederStatusCard({
             styles.feederBtn,
             styles.feederBtnFull,
             activeFeeder === "both" && styles.activeBtn,
-            !feederActive && styles.disabled,
+            (!feederActive || feedingLoading) && styles.disabled,
           ]}
-          disabled={!feederActive}
+          disabled={!feederActive || feedingLoading}
         >
-          <View
-            style={[
-              styles.feederIcon,
-              activeFeeder === "both" && styles.activeIcon,
-            ]}
-          >
-            <Bird
-              size={18}
-              color={activeFeeder === "both" ? "#fff" : AgrimateColors.primary}
-            />
-          </View>
-          <Text
-            style={[
-              styles.feederText,
-              activeFeeder === "both" && styles.activeText,
-            ]}
-          >
-            {activeFeeder === "both" ? "Stop Feeding" : "Start Feeding"}
-          </Text>
+          {feedingLoading ? (
+            <>
+              <View
+                style={[
+                  styles.feederIcon,
+                  activeFeeder === "both" && styles.activeIcon,
+                ]}
+              >
+                <ActivityIndicator
+                  size="small"
+                  color={
+                    activeFeeder === "both" ? "#fff" : AgrimateColors.primary
+                  }
+                />
+              </View>
+
+              <Text
+                style={[
+                  styles.feederText,
+                  activeFeeder === "both" && styles.activeText,
+                ]}
+              >
+                {activeFeeder === "both"
+                  ? "Stopping Feed..."
+                  : "Starting Feed..."}
+              </Text>
+            </>
+          ) : (
+            <>
+              <View
+                style={[
+                  styles.feederIcon,
+                  activeFeeder === "both" && styles.activeIcon,
+                ]}
+              >
+                <Bird
+                  size={18}
+                  color={
+                    activeFeeder === "both" ? "#fff" : AgrimateColors.primary
+                  }
+                />
+              </View>
+
+              <Text
+                style={[
+                  styles.feederText,
+                  activeFeeder === "both" && styles.activeText,
+                ]}
+              >
+                {activeFeeder === "both" ? "Stop Feeding" : "Start Feeding"}
+              </Text>
+            </>
+          )}
         </Pressable>
       </View>
     </View>
@@ -214,7 +271,7 @@ const styles = StyleSheet.create({
   },
 
   on: {
-    backgroundColor: "#3B82F6",
+    backgroundColor: "#22C55E",
   },
 
   feeding: {

@@ -29,7 +29,8 @@ export function AgrimateDashboard() {
 
     handleLayerChange,
     layerLoading,
-    feederLoading,
+    powerLoading,
+    feedingLoading,
     machineLoading,
   } = useFeeder();
 
@@ -56,7 +57,9 @@ export function AgrimateDashboard() {
           <LayerSelector
             selectedLayer={selectedLayer}
             onLayerChange={handleLayerChange}
-            disabled={layerLoading || feederLoading || machineLoading}
+            disabled={
+              layerLoading || powerLoading || feedingLoading || machineLoading
+            }
           />
           {/* ========================= */}
           {/* FEEDER */}
@@ -66,6 +69,8 @@ export function AgrimateDashboard() {
             feederActive={feederActive}
             activeFeeder={activeFeeder}
             isFeeding={isFeeding}
+            powerLoading={powerLoading}
+            feedingLoading={feedingLoading}
             onFeederChange={handleFeederChange}
             onTogglePower={handleToggleFeederPower} // ← add this
           />

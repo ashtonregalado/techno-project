@@ -47,11 +47,15 @@ export function useFeeder() {
   const [activeFeeder, setActiveFeeder] = useState<FeederSide>(null);
   const [feedRate, setFeedRate] = useState(0);
   const [feedLevel, setFeedLevel] = useState(0);
-  const [feederLoading, setFeederLoading] = useState(false);
+  const [powerLoading, setPowerLoading] = useState(false);
+
+  const [feedingLoading, setFeedingLoading] = useState(false);
 
   const handleToggleFeederPower = async () => {
-    if (feederLoading) return;
-    setFeederLoading(true);
+    if (powerLoading) return;
+
+    setPowerLoading(true);
+
     try {
       if (feederActive) {
         await setFeederPower(false);
@@ -66,13 +70,13 @@ export function useFeeder() {
     } catch (err) {
       console.error("Feeder power toggle failed:", err);
     } finally {
-      setFeederLoading(false);
+      setPowerLoading(false);
     }
   };
 
   const handleFeederChange = async (feeder: FeederSide) => {
-    if (feederLoading || !feederActive) return;
-    setFeederLoading(true);
+    if (feedingLoading || !feederActive) return;
+    setFeedingLoading(true);
     try {
       await setFeederSide(feeder);
       setActiveFeeder(feeder);
@@ -80,7 +84,7 @@ export function useFeeder() {
     } catch (err) {
       console.error("Feeder side change failed:", err);
     } finally {
-      setFeederLoading(false);
+      setFeedingLoading(false);
     }
   };
 
@@ -144,7 +148,8 @@ export function useFeeder() {
     activeFeeder,
     feedRate,
     feedLevel,
-    feederLoading,
+    powerLoading,
+    feedingLoading,
 
     // Feeder handlers
     handleToggleFeederPower,

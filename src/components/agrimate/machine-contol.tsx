@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
   },
 
   statusDotOff: {
-    backgroundColor: "rgba(27,67,50,0.4)",
+    backgroundColor: AgrimateColors.primary,
   },
 
   statusText: {
