@@ -100,6 +100,7 @@ export function FeederStatusCard({
           style={[
             styles.powerButton,
             feederActive ? styles.powerOn : styles.powerOff,
+            powerLoading && styles.disabled,
           ]}
           disabled={powerLoading}
         >

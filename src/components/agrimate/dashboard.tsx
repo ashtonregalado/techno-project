@@ -31,7 +31,9 @@ export function AgrimateDashboard() {
     layerLoading,
     powerLoading,
     feedingLoading,
-    machineLoading,
+    machineDirectionLoading,
+    machinePowerLoading,
+    pendingDirection,
   } = useFeeder();
 
   /*
@@ -58,7 +60,11 @@ export function AgrimateDashboard() {
             selectedLayer={selectedLayer}
             onLayerChange={handleLayerChange}
             disabled={
-              layerLoading || powerLoading || feedingLoading || machineLoading
+              layerLoading ||
+              powerLoading ||
+              feedingLoading ||
+              machineDirectionLoading ||
+              machinePowerLoading
             }
           />
           {/* ========================= */}
@@ -80,6 +86,9 @@ export function AgrimateDashboard() {
           <MachineControlCard
             isActive={isMachineRunning}
             direction={machineDirection}
+            machineDirectionLoading={machineDirectionLoading}
+            machinePowerLoading={machinePowerLoading}
+            pendingDirection={pendingDirection}
             onTogglePower={handleTogglePower}
             onDirectionChange={handleDirectionChange}
           />

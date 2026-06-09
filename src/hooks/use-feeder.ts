@@ -97,36 +97,59 @@ export function useFeeder() {
   const [isMachineRunning, setIsMachineRunning] = useState(false);
   const [machineDirection, setMachineDirectionState] =
     useState<MachineDirection>("stop");
-  const [machineLoading, setMachineLoading] = useState(false);
+
+  // Separate machine loading states
+  const [machinePowerLoading, setMachinePowerLoading] = useState(false);
+  const [machineDirectionLoading, setMachineDirectionLoading] = useState(false);
+
+  // Track which button was pressed
+  const [pendingDirection, setPendingDirection] = useState<
+    "forward" | "reverse" | null
+  >(null);
 
   const handleTogglePower = async () => {
-    if (machineLoading) return;
-    setMachineLoading(true);
+    if (machinePowerLoading) return;
+
+    setMachinePowerLoading(true);
+
     try {
       if (isMachineRunning) {
         await setMachinePower(false);
+
         setIsMachineRunning(false);
+
         setMachineDirectionState("stop");
       } else {
         await setMachinePower(true);
+
         setIsMachineRunning(true);
       }
     } catch (error) {
       console.error("Machine power toggle failed:", error);
     } finally {
-      setMachineLoading(false);
+      setMachinePowerLoading(false);
     }
   };
 
   const handleDirectionChange = async (dir: "forward" | "reverse") => {
-    if (!isMachineRunning) return;
-    const newDir = machineDirection === dir ? "stop" : dir;
-    setMachineDirectionState(newDir);
+    if (!isMachineRunning || machineDirectionLoading) return;
+
+    setMachineDirectionLoading(true);
+
+    setPendingDirection(dir);
+
     try {
+      const newDir = machineDirection === dir ? "stop" : dir;
+
       await setMachineDirection(newDir);
+
+      setMachineDirectionState(newDir);
     } catch (error) {
       console.error("Direction change failed:", error);
-      setMachineDirectionState(machineDirection);
+    } finally {
+      setMachineDirectionLoading(false);
+
+      setPendingDirection(null);
     }
   };
 
@@ -158,7 +181,9 @@ export function useFeeder() {
     // Machine state
     isMachineRunning,
     machineDirection,
-    machineLoading,
+    machinePowerLoading,
+    machineDirectionLoading,
+    pendingDirection,
 
     // Machine handlers
     handleTogglePower,

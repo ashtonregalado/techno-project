@@ -1,11 +1,22 @@
 import { AgrimateColors, Spacing } from "@/constants/design";
 import { LinearGradient } from "expo-linear-gradient";
 import { Boxes, ChevronsLeft, ChevronsRight, Power } from "lucide-react-native";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 interface Props {
   isActive: boolean;
   direction: "forward" | "reverse" | "stop";
+
+  machinePowerLoading?: boolean;
+  machineDirectionLoading?: boolean;
+  pendingDirection?: "forward" | "reverse" | null;
+
   onTogglePower?: () => void;
   onDirectionChange?: (dir: "forward" | "reverse") => void;
 }
@@ -13,6 +24,9 @@ interface Props {
 export function MachineControlCard({
   isActive,
   direction,
+  machinePowerLoading = false,
+  machineDirectionLoading = false,
+  pendingDirection = null,
   onTogglePower,
   onDirectionChange,
 }: Props) {
@@ -71,16 +85,29 @@ export function MachineControlCard({
         {/* POWER BUTTON */}
         <Pressable
           onPress={onTogglePower}
+          disabled={machinePowerLoading}
           style={[
             styles.powerButton,
             isActive ? styles.powerButtonOn : styles.powerButtonOff,
+            machinePowerLoading && styles.disabled,
           ]}
         >
           <View style={styles.powerIconCircle}>
-            <Power size={16} color="#fff" />
+            {machinePowerLoading ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <Power size={16} color="#fff" />
+            )}
           </View>
+
           <Text style={styles.powerText}>
-            {isActive ? "Power ON" : "Power OFF"}
+            {machinePowerLoading
+              ? isActive
+                ? "Powering Off..."
+                : "Powering On..."
+              : isActive
+                ? "Power ON"
+                : "Power OFF"}
           </Text>
         </Pressable>
 
@@ -88,12 +115,12 @@ export function MachineControlCard({
         <View style={styles.directionRow}>
           {/* Reverse */}
           <Pressable
-            disabled={!isActive}
+            disabled={!isActive || machineDirectionLoading}
             onPress={() => onDirectionChange?.("reverse")}
             style={[
               styles.directionButton,
               direction === "reverse" && styles.directionButtonActive,
-              !isActive && styles.disabled,
+              (!isActive || machineDirectionLoading) && styles.disabled,
             ]}
           >
             <View
@@ -102,31 +129,43 @@ export function MachineControlCard({
                 direction === "reverse" && styles.directionIconCircleActive,
               ]}
             >
-              <ChevronsLeft
-                size={16}
-                color={
-                  direction === "reverse" ? "#fff" : AgrimateColors.primary
-                }
-              />
+              {machineDirectionLoading && pendingDirection === "reverse" ? (
+                <ActivityIndicator
+                  size="small"
+                  color={
+                    direction === "reverse" ? "#fff" : AgrimateColors.primary
+                  }
+                />
+              ) : (
+                <ChevronsLeft
+                  size={16}
+                  color={
+                    direction === "reverse" ? "#fff" : AgrimateColors.primary
+                  }
+                />
+              )}
             </View>
+
             <Text
               style={[
                 styles.directionText,
                 direction === "reverse" && styles.directionTextActive,
               ]}
             >
-              Reverse
+              {machineDirectionLoading && pendingDirection === "reverse"
+                ? "Reversing..."
+                : "Reverse"}
             </Text>
           </Pressable>
 
           {/* Forward */}
           <Pressable
-            disabled={!isActive}
+            disabled={!isActive || machineDirectionLoading}
             onPress={() => onDirectionChange?.("forward")}
             style={[
               styles.directionButton,
               direction === "forward" && styles.directionButtonActive,
-              !isActive && styles.disabled,
+              (!isActive || machineDirectionLoading) && styles.disabled,
             ]}
           >
             <View
@@ -135,20 +174,32 @@ export function MachineControlCard({
                 direction === "forward" && styles.directionIconCircleActive,
               ]}
             >
-              <ChevronsRight
-                size={16}
-                color={
-                  direction === "forward" ? "#fff" : AgrimateColors.primary
-                }
-              />
+              {machineDirectionLoading && pendingDirection === "forward" ? (
+                <ActivityIndicator
+                  size="small"
+                  color={
+                    direction === "forward" ? "#fff" : AgrimateColors.primary
+                  }
+                />
+              ) : (
+                <ChevronsRight
+                  size={16}
+                  color={
+                    direction === "forward" ? "#fff" : AgrimateColors.primary
+                  }
+                />
+              )}
             </View>
+
             <Text
               style={[
                 styles.directionText,
                 direction === "forward" && styles.directionTextActive,
               ]}
             >
-              Forward
+              {machineDirectionLoading && pendingDirection === "forward"
+                ? "Starting..."
+                : "Forward"}
             </Text>
           </Pressable>
         </View>
