@@ -154,7 +154,9 @@ export function MachineControlCard({
             >
               {machineDirectionLoading && pendingDirection === "reverse"
                 ? "Reversing..."
-                : "Reverse"}
+                : direction === "reverse"
+                  ? "Stop"
+                  : "Reverse"}
             </Text>
           </Pressable>
 
@@ -199,7 +201,9 @@ export function MachineControlCard({
             >
               {machineDirectionLoading && pendingDirection === "forward"
                 ? "Starting..."
-                : "Forward"}
+                : direction === "forward"
+                  ? "Stop"
+                  : "Forward"}
             </Text>
           </Pressable>
         </View>
